@@ -11,6 +11,13 @@ After the fixed v1 evaluation consumed Wyre, Thames and Chilterns South was
 reserved as the next untouched external area. It must remain excluded from all
 model changes until a new specification is frozen.
 
+That v1 sequence is now historical. For upstream model v2, Lune and Ribble were
+the development catchments and Derwent Derbyshire was frozen before model
+selection. Derwent passed its coverage gate and was evaluated once on 18 August
+2026; it is now consumed. Any subsequent model change requires a newly selected
+untouched area. Current results and selection hashes are recorded in
+`docs/upstream-external-results.md` and `config/upstream_model_selection.yaml`.
+
 `earth-risk extract-study-area AREA_ID` downloads the official boundary and
 classifications with checksums. Every downstream command already accepts custom
 geometry and output paths, allowing the same grid, Water Quality Explorer,
