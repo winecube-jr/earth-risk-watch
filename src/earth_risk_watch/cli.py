@@ -10,6 +10,7 @@ from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.cloud_run import (
     run_dem_grid_features,
     run_grid_features,
+    run_hydroatlas_site_features,
     run_hydrology_grid_features,
     run_pilot_summary,
     run_seasonal_summary,
@@ -161,6 +162,16 @@ def hydrology_grid_features(
 ) -> None:
     """Build common MERIT Hydro context features in Earth Engine."""
     target = run_hydrology_grid_features(grid, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("hydroatlas-site-features")
+def hydroatlas_site_features(
+    points: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
+    output: Path = Path("data/features/upstream/pilot-hydroatlas.parquet"),
+) -> None:
+    """Assign monitoring sites to HydroATLAS basins and upstream attributes."""
+    target = run_hydroatlas_site_features(points, output)
     typer.echo(f"Created {target}")
 
 

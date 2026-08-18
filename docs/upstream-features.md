@@ -15,6 +15,21 @@ land cover, rainfall and antecedent wetness, wastewater assets, urban impermeabl
 surface, agricultural proxies, soils and geology. Every resulting field must
 record its source year, spatial support, aggregation rule and missing coverage.
 
+As an intermediate stage, monitoring sites are assigned to the smallest
+intersecting HydroATLAS level-12 basin. The staged table retains topology,
+sub-basin and total upstream area, plus upstream climate, land-cover, soil,
+erosion, population and road attributes. Source column names and values remain
+unchanged until the HydroATLAS scaling factors are independently audited.
+
+The first assignment run mapped all 1,714 configured sampling sites without
+nulls, but only 45 distinct level-12 basins were represented. Active monitored
+sites occupy 8 basins in Lune, 11 in Ribble, 4 in Wyre and 14 in Thames and
+Chilterns South. Some outlet-level upstream areas substantially exceed the local
+MERIT upstream-area value near a site. These findings confirm that HydroATLAS is
+a coarse upstream-pressure proxy and topology scaffold, not a precise site
+watershed. A later operational method must snap sites to the river network and
+delineate from a nationally appropriate flow-direction surface.
+
 HydroBASINS provides explicit hierarchical topology and is suitable for an
 initial reproducible network prototype. MERIT Hydro provides finer approximately
 90 m flow direction and upstream-area context. Neither should be presented as an

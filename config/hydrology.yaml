@@ -10,3 +10,19 @@ merit_hydro:
     - river_width_max_m
     - permanent_water_fraction
   interpretation: hydrologic context, not delineated upstream pollution load
+hydroatlas:
+  asset: WWF/HydroATLAS/v1/Basins/level12
+  assignment: smallest level-12 polygon intersecting each monitoring point
+  scaling_status: retain source attributes until technical-document audit
+  upstream_attributes:
+    - UP_AREA
+    - pre_mm_uyr
+    - crp_pc_use
+    - pst_pc_use
+    - urb_pc_use
+    - for_pc_use
+    - cly_pc_uav
+    - ero_kh_uav
+    - pop_ct_usu
+    - ppd_pk_uav
+    - rdd_mk_uav

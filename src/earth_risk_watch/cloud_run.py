@@ -24,6 +24,7 @@ from earth_risk_watch.satellite import (
     load_sentinel_job,
 )
 from earth_risk_watch.settings import Settings
+from earth_risk_watch.upstream import SOURCE_ATTRIBUTES, rows_from_hydroatlas
 
 
 def run_pilot_summary(geometry_path: Path, output: Path) -> Path:  # pragma: no cover
@@ -270,6 +271,45 @@ def run_hydrology_grid_features(grid_path: Path, output: Path) -> Path:  # pragm
         "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "masked_pixel_rule": "MERIT masked pixels are filled with zero before aggregation",
         "warning": "Hydrologic context only; not a delineated upstream pollution load.",
+    }
+    output.with_suffix(output.suffix + ".provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
+    return output
+
+
+def run_hydroatlas_site_features(points_path: Path, output: Path) -> Path:  # pragma: no cover
+    """Assign monitoring sites to level-12 basins and retain upstream attributes."""
+    import ee
+
+    settings = Settings()
+    if settings.earthengine_project is None:
+        raise RuntimeError("EARTHENGINE_PROJECT is not configured")
+    ee.Initialize(project=settings.earthengine_project)
+    points_geojson: dict[str, Any] = json.loads(points_path.read_text(encoding="utf-8"))
+    points = ee.FeatureCollection(points_geojson)
+    basins = ee.FeatureCollection("WWF/HydroATLAS/v1/Basins/level12")
+
+    def attach_basin(feature: Any) -> Any:
+        basin = ee.Feature(basins.filterBounds(feature.geometry()).sort("SUB_AREA").first())
+        return ee.Feature(feature).copyProperties(basin, list(SOURCE_ATTRIBUTES))
+
+    joined = points.map(attach_basin).getInfo()
+    frame = rows_from_hydroatlas(joined["features"])
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_suffix(output.suffix + ".tmp")
+    frame.to_parquet(temporary, index=False)
+    os.replace(temporary, output)
+    provenance = {
+        "created_at": datetime.now(UTC).isoformat(),
+        "earth_engine_project": settings.earthengine_project,
+        "source": "WWF/HydroATLAS/v1/Basins/level12",
+        "rows": len(frame),
+        "basins": int(frame["HYBAS_ID"].nunique()),
+        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "assignment": "Point-in-polygon; smallest intersecting level-12 basin",
+        "scaling": "Source attributes retained unscaled pending technical-document audit",
+        "warning": "Basin outlet attributes approximate, but do not exactly delineate, each site.",
     }
     output.with_suffix(output.suffix + ".provenance.json").write_text(
         json.dumps(provenance, indent=2) + "\n", encoding="utf-8"

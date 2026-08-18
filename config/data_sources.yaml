@@ -87,3 +87,11 @@ sources:
     geography: Global
     licence: HydroSHEDS licence; scientific educational and commercial use
     themes: [water, land]
+  - id: hydroatlas
+    title: HydroATLAS BasinATLAS Level 12
+    provider: HydroSHEDS / WWF
+    access: earth_engine
+    endpoint: WWF/HydroATLAS/v1/Basins/level12
+    geography: Global
+    licence: Creative Commons Attribution 4.0
+    themes: [water, land, climate, people]
