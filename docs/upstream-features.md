@@ -72,6 +72,33 @@ and mean heavy-rain-day counts from 38.5 to 41.0. The narrow between-site range
 is consistent with the coarse effective resolution and confirms that this layer
 should provide temporal and regional context rather than fine local separation.
 
+## Storm-overflow exposure
+
+The wastewater contract uses the Environment Agency's 2024 Event Duration
+Monitoring Storm Overflow Annual Return. It normalizes all water-company sheets,
+converts outlet OS National Grid references to British National Grid point
+geometry, and retains spill count, total spill duration and monitor-operational
+coverage. Each complete site watershed receives counts of intersecting outlets,
+monitored outlets, reported spills and spill hours, plus mean EDM coverage and a
+count of outlets below 90% coverage.
+
+These company-reported regulatory returns describe storm-overflow activity. They
+do not represent continuous treated-effluent discharges, dry-weather flow,
+pollutant concentration, receiving-water dilution or ecological impact. A spill
+count also does not encode volume. Results must therefore be described as an
+upstream exposure indicator, with low monitor coverage visible, and not as a
+wastewater load. The 2024 annual return is published by the Environment Agency
+under the Open Government Licence.
+
+The first national extraction produced 14,251 outlets with valid British
+National Grid references across all ten reporting companies. Identifier and
+range checks found no duplicate overflow IDs, invalid geometries, negative spill
+values or monitor coverage outside 0–100%. Of the six complete pilot watersheds,
+four small upland watersheds contain no EDM outlet. The two larger downstream
+watersheds contain five and nine outlets, with 206 and 384 reported spills and
+approximately 1,909 and 2,434 total spill hours respectively. Because these
+watersheds are nested, their totals are cumulative rather than independent.
+
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,
 sub-basin and total upstream area, plus upstream climate, land-cover, soil,

@@ -55,6 +55,14 @@ sources:
     geography: England
     licence: Open Government Licence 3.0
     themes: [water]
+  - id: ea-edm-2024
+    title: Event Duration Monitoring Storm Overflows Annual Return 2024
+    provider: Environment Agency
+    access: download_portal
+    endpoint: https://www.data.gov.uk/dataset/19f6064d-7356-466f-844e-d20ea10ae9fd/event-duration-monitoring-storm-overflows-annual-returns
+    geography: England
+    licence: Open Government Licence 3.0
+    themes: [water, people]
   - id: ea-ecology
     title: Ecology and Fish Data Explorer
     provider: Environment Agency

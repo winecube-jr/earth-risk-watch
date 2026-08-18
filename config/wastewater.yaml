@@ -1,0 +1,14 @@
+event_duration_monitoring:
+  reporting_year: 2024
+  publisher: Environment Agency
+  spatial_reference: EPSG:27700
+  watershed_assignment: outlet intersects complete D8 watershed polygon
+  outputs:
+    - upstream_overflow_count
+    - upstream_monitored_overflow_count
+    - upstream_spill_count_2024
+    - upstream_spill_duration_hours_2024
+    - upstream_mean_edm_coverage_percent_2024
+    - upstream_low_coverage_overflow_count_2024
+  licence: Open Government Licence 3.0
+  interpretation: storm-overflow activity exposure, not treatment or pollutant load

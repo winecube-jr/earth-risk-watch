@@ -36,6 +36,7 @@ from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
+from earth_risk_watch.wastewater import extract_edm_2024, save_upstream_edm_features
 from earth_risk_watch.watershed import (
     save_site_delineation_diagnostics,
     save_site_watershed_polygons,
@@ -270,6 +271,26 @@ def build_upstream_raster_features(
 ) -> None:
     """Summarize a named pressure raster within each site watershed."""
     target = save_watershed_raster_features(watersheds, raster, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-edm-2024")
+def extract_edm_annual_return(
+    output: Path = Path("data/staged/wastewater/edm-2024.parquet"),
+) -> None:
+    """Download and normalize the EA 2024 storm-overflow annual return."""
+    target = extract_edm_2024(output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-upstream-edm-features")
+def build_upstream_edm_features_command(
+    watersheds: Path,
+    edm: Path = Path("data/staged/wastewater/edm-2024.parquet"),
+    output: Path = Path("data/features/upstream/site-edm-2024.parquet"),
+) -> None:
+    """Aggregate 2024 storm-overflow activity inside site watersheds."""
+    target = save_upstream_edm_features(watersheds, edm, output)
     typer.echo(f"Created {target}")
 
 
