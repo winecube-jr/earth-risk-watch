@@ -28,6 +28,17 @@ from earth_risk_watch.satellite import (
 from earth_risk_watch.settings import Settings
 from earth_risk_watch.upstream import SOURCE_ATTRIBUTES, rows_from_hydroatlas
 
+WORLDCOVER_CLASSES = {
+    "tree_fraction": 10,
+    "shrub_fraction": 20,
+    "grass_fraction": 30,
+    "cropland_fraction": 40,
+    "built_up_fraction": 50,
+    "bare_fraction": 60,
+    "water_fraction": 80,
+    "wetland_fraction": 90,
+}
+
 
 def run_pilot_summary(geometry_path: Path, output: Path) -> Path:  # pragma: no cover
     """Run a low-volume annual Sentinel summary over the pilot catchment."""
@@ -412,6 +423,119 @@ def download_merit_routing_grid(
         "bytes": output.stat().st_size,
         "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "warning": "Watersheds touching the clipped raster boundary are incomplete.",
+    }
+    output.with_suffix(output.suffix + ".provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
+    return output
+
+
+def download_worldcover_pressure_grid(
+    geometry_path: Path,
+    output: Path,
+    *,
+    buffer_metres: int = 20_000,
+    scale_metres: int = 100,
+) -> Path:  # pragma: no cover
+    """Download coverage fractions derived from ESA WorldCover 2021 classes."""
+    import ee
+    import numpy as np
+    import rasterio
+    from rasterio.io import MemoryFile
+
+    settings = Settings()
+    if settings.earthengine_project is None:
+        raise RuntimeError("EARTHENGINE_PROJECT is not configured")
+    if buffer_metres < 0:
+        raise ValueError("buffer_metres must not be negative")
+    if scale_metres < 10:
+        raise ValueError("scale_metres must be at least the 10 m source resolution")
+    ee.Initialize(project=settings.earthengine_project)
+    geometry_geojson: dict[str, Any] = json.loads(geometry_path.read_text(encoding="utf-8"))
+
+    def coordinate_pairs(value: Any) -> list[tuple[float, float]]:
+        if (
+            isinstance(value, list)
+            and len(value) >= 2
+            and isinstance(value[0], int | float)
+            and isinstance(value[1], int | float)
+        ):
+            return [(float(value[0]), float(value[1]))]
+        if isinstance(value, list):
+            return [pair for item in value for pair in coordinate_pairs(item)]
+        if isinstance(value, dict):
+            return [pair for item in value.values() for pair in coordinate_pairs(item)]
+        return []
+
+    pairs = [
+        pair
+        for feature in geometry_geojson["features"]
+        for pair in coordinate_pairs(feature["geometry"])
+    ]
+    longitudes, latitudes = zip(*pairs, strict=True)
+    middle_latitude = (min(latitudes) + max(latitudes)) / 2
+    latitude_buffer = buffer_metres / 111_320
+    longitude_buffer = buffer_metres / (111_320 * math.cos(math.radians(middle_latitude)))
+    geometry = ee.Geometry.BBox(
+        min(longitudes) - longitude_buffer,
+        min(latitudes) - latitude_buffer,
+        max(longitudes) + longitude_buffer,
+        max(latitudes) + latitude_buffer,
+    )
+    classification = ee.ImageCollection("ESA/WorldCover/v200").first().select("Map")
+    bodies = []
+    with open_data_client(timeout_seconds=180) as client:
+        for band_name, class_value in WORLDCOVER_CLASSES.items():
+            fraction = (
+                classification.eq(class_value)
+                .unmask(0)
+                .reduceResolution(reducer=ee.Reducer.mean(), maxPixels=1024)
+                .rename(band_name)
+            )
+            url = fraction.getDownloadURL(
+                {
+                    "name": f"worldcover-{band_name}-{scale_metres}m",
+                    "region": geometry,
+                    "scale": scale_metres,
+                    "format": "GEO_TIFF",
+                }
+            )
+            bodies.append(get_bytes(client, url, max_bytes=25_000_000))
+    arrays = []
+    profile: dict[str, Any] | None = None
+    for body in bodies:
+        with MemoryFile(body) as memory_file, memory_file.open() as source_band:
+            arrays.append(source_band.read(1).astype("float32"))
+            if profile is None:
+                profile = source_band.profile.copy()
+            elif (
+                source_band.shape != arrays[0].shape
+                or source_band.transform != profile["transform"]
+                or source_band.crs != profile["crs"]
+            ):
+                raise ValueError("WorldCover fraction bands do not share one pixel grid")
+    if profile is None:
+        raise ValueError("Earth Engine returned no WorldCover fraction bands")
+    profile.update(count=len(arrays), dtype="float32", compress="deflate", nodata=None)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with rasterio.open(output, "w", **profile) as target:
+        target.write(np.stack(arrays))
+        for index, band_name in enumerate(WORLDCOVER_CLASSES, 1):
+            target.set_band_description(index, band_name)
+    provenance = {
+        "created_at": datetime.now(UTC).isoformat(),
+        "earth_engine_project": settings.earthengine_project,
+        "source": "ESA/WorldCover/v200",
+        "source_year": 2021,
+        "source_resolution_metres": 10,
+        "processing_scale_metres": scale_metres,
+        "aggregation": "mean of binary class membership at processing scale",
+        "classes": WORLDCOVER_CLASSES,
+        "buffer_metres": buffer_metres,
+        "bytes": output.stat().st_size,
+        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "licence": "CC-BY-4.0",
+        "warning": "Static 2021 land cover; class fractions are pressure proxies, not loads.",
     }
     output.with_suffix(output.suffix + ".provenance.json").write_text(
         json.dumps(provenance, indent=2) + "\n", encoding="utf-8"

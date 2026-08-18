@@ -1,0 +1,17 @@
+worldcover:
+  asset: ESA/WorldCover/v200
+  source_year: 2021
+  source_resolution_metres: 10
+  processing_scale_metres: 100
+  export_buffer_metres: 20000
+  aggregation: mean of binary class membership
+  classes:
+    tree_fraction: 10
+    shrub_fraction: 20
+    grass_fraction: 30
+    cropland_fraction: 40
+    built_up_fraction: 50
+    bare_fraction: 60
+    water_fraction: 80
+    wetland_fraction: 90
+  interpretation: static land-cover composition proxies, not pollution loads

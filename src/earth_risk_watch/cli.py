@@ -9,6 +9,7 @@ import typer
 from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.cloud_run import (
     download_merit_routing_grid,
+    download_worldcover_pressure_grid,
     run_dem_grid_features,
     run_grid_features,
     run_hydroatlas_site_features,
@@ -189,6 +190,20 @@ def extract_merit_routing_grid(
 ) -> None:
     """Download bounded MERIT D8 direction and upstream-area bands."""
     target = download_merit_routing_grid(geometry, output, buffer_metres=buffer_metres)
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-worldcover-pressure-grid")
+def extract_worldcover_pressure_grid(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/raw/land-cover/pilot-worldcover-100m.tif"),
+    buffer_metres: int = typer.Option(20_000, min=0),
+    scale_metres: int = typer.Option(100, min=10),
+) -> None:
+    """Download 2021 ESA WorldCover class fractions for upstream aggregation."""
+    target = download_worldcover_pressure_grid(
+        geometry, output, buffer_metres=buffer_metres, scale_metres=scale_metres
+    )
     typer.echo(f"Created {target}")
 
 

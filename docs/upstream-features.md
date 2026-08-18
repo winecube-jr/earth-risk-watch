@@ -26,6 +26,29 @@ excluded. This differs from the expanded Lune validation run because the latter
 uses a larger source boundary. Boundary status is therefore an extent-quality
 check, not an intrinsic classification of a monitoring site.
 
+## First pressure raster: land cover
+
+ESA WorldCover v200 supplies the first independently sourced pressure raster.
+The pipeline converts its 2021 10 m categorical map to eight binary class bands,
+then averages those bands at a configurable 100 m processing scale. Values are
+therefore class fractions rather than category codes. Tree, shrub, grass,
+cropland, built-up, bare, permanent-water and wetland fractions can be aggregated
+within each complete site watershed using the generic raster feature contract.
+
+WorldCover is static and temporally offset from the 2024 monitoring outcomes. It
+is useful for landscape context and interpretable source-pressure hypotheses,
+but does not measure fertiliser application, wastewater discharge, pollutant
+load or short-term land-cover change. The source is ESA WorldCover 2021 v200 at
+10 m under CC-BY-4.0; derived exports retain the source year, class mapping,
+processing scale, checksum and licence in a provenance sidecar.
+
+The first pilot export is a 729 by 1,077 pixel, eight-band GeoTIFF of 2.28 MB.
+All six complete pilot watersheds have full raster coverage. Their dominant
+WorldCover class is grassland (mean watershed fractions from 0.802 to 0.958),
+while built-up fractions range from approximately 0.001 to 0.020. These are
+engineering validation results showing that the extraction and aggregation
+contracts work; they are not evidence of a relationship with water quality.
+
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,
 sub-basin and total upstream area, plus upstream climate, land-cover, soil,

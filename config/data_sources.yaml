@@ -15,6 +15,14 @@ sources:
     geography: UK
     licence: Copernicus Data Space Legal Notice
     themes: [water, climate, land]
+  - id: esa-worldcover-2021
+    title: ESA WorldCover 10m 2021 v200
+    provider: ESA WorldCover Consortium
+    access: earth_engine
+    endpoint: ESA/WorldCover/v200
+    geography: Global
+    licence: Creative Commons Attribution 4.0
+    themes: [land, water, habitat, people]
   - id: landsat-c2-l2
     title: Landsat Collection 2 Level 2
     provider: USGS
