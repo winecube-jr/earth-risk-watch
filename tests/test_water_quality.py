@@ -79,9 +79,11 @@ def test_fetch_observations_paginates() -> None:
     assert route.call_count == 2
 
 
-def test_fetch_observations_rejects_too_many_points() -> None:
-    with pytest.raises(ValueError, match="between 1 and 100"):
+def test_fetch_observations_rejects_invalid_point_counts() -> None:
+    with pytest.raises(ValueError, match="between 1 and 500"):
         fetch_observations([])
+    with pytest.raises(ValueError, match="between 1 and 500"):
+        fetch_observations([f"NW-{index}" for index in range(501)])
     with pytest.raises(ValueError, match="site_batch_size"):
         fetch_observations(["NW-1"], site_batch_size=0)
 

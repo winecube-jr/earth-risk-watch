@@ -10,6 +10,7 @@ on:
         type: choice
         options:
           - lune-management
+          - wyre-management
           - lune-rawthey-greta
 
 permissions:

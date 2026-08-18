@@ -10,3 +10,8 @@ areas:
     entity_id: "3053"
     role: multi-catchment-expansion
     operational_catchment_ids: ["3209", "3240", "3290", "3291", "3363", "3526"]
+  - id: wyre-management
+    name: Wyre Management Catchment
+    entity_type: ManagementCatchment
+    entity_id: "3119"
+    role: external-validation-expansion

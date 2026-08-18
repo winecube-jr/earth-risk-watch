@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from earth_risk_watch.settings import repository_root
 
@@ -19,7 +19,7 @@ class StudyArea(BaseModel):
     entity_type: Literal["OperationalCatchment", "ManagementCatchment"]
     entity_id: str
     role: str
-    operational_catchment_ids: list[str] = []
+    operational_catchment_ids: list[str] = Field(default_factory=list)
 
     @property
     def base_endpoint(self) -> str:

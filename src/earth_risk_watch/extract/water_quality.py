@@ -118,9 +118,9 @@ def fetch_observations(
     page_size: int = 250,
     site_batch_size: int = 25,
 ) -> list[dict[str, Any]]:
-    """Retrieve bounded, paginated observations for at most 100 sampling points."""
-    if not point_notations or len(point_notations) > 100:
-        raise ValueError("point_notations must contain between 1 and 100 values")
+    """Retrieve bounded, paginated observations for up to 500 sampling points."""
+    if not point_notations or len(point_notations) > 500:
+        raise ValueError("point_notations must contain between 1 and 500 values")
     if not 1 <= page_size <= 250:
         raise ValueError("page_size must be between 1 and 250 for JSON-LD")
     if not 1 <= site_batch_size <= 100:

@@ -11,6 +11,9 @@ def test_load_study_areas() -> None:
     assert area.entity_id == "3053"
     assert len(area.operational_catchment_ids) == 6
     assert area.base_endpoint.endswith("ManagementCatchment/3053")
+    validation_area = registry.by_id("wyre-management")
+    assert validation_area.entity_id == "3119"
+    assert validation_area.role == "external-validation-expansion"
 
 
 def test_study_area_ids_must_be_unique(tmp_path: Path) -> None:
