@@ -43,6 +43,7 @@ earth-risk sentinel-grid-features
 earth-risk build-ecological-outcomes
 earth-risk extract-water-sampling-points
 earth-risk extract-water-observations
+earth-risk build-monitoring-features
 pytest
 ```
 
@@ -55,6 +56,8 @@ The independent regulatory outcome assessment and its modelling constraints are
 documented in [docs/outcomes.md](docs/outcomes.md).
 The live regulatory monitoring extraction and censored-result treatment are
 documented in [docs/water-quality.md](docs/water-quality.md).
+The spatial-temporal monitoring linkage is documented in
+[docs/monitoring-features.md](docs/monitoring-features.md).
 
 ## Project principles
 

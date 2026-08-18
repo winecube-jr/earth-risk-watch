@@ -18,6 +18,7 @@ from earth_risk_watch.extract.ea_catchments import (
 )
 from earth_risk_watch.extract.water_quality import save_pilot_observations, save_sampling_points
 from earth_risk_watch.grid import build_clipped_grid
+from earth_risk_watch.monitoring_features import save_monitoring_feature_table
 from earth_risk_watch.outcomes import build_ecological_outcomes
 from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.satellite import load_sentinel_job
@@ -149,6 +150,19 @@ def extract_water_observations(
 ) -> None:
     """Download 2024 core observations from open river sites in the pilot."""
     target = save_pilot_observations(sampling_points, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-monitoring-features")
+def build_monitoring_features(
+    observations: Path = Path("data/features/water-quality/pilot-2024.parquet"),
+    sampling_points: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
+    grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    satellite: Path = Path("data/features/sentinel/pilot-seasonal.parquet"),
+    output: Path = Path("data/features/monitoring/pilot-seasonal.parquet"),
+) -> None:
+    """Link seasonal water observations to same-cell satellite predictors."""
+    target = save_monitoring_feature_table(observations, sampling_points, grid, satellite, output)
     typer.echo(f"Created {target}")
 
 
