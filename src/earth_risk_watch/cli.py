@@ -189,9 +189,10 @@ def build_monitoring_features(
 def extract_lidar_terrain(
     geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
     output: Path = Path("data/raw/lidar/pilot-dtm-10m.tif"),
+    resolution_metres: int = typer.Option(10, min=1),
 ) -> None:
-    """Download a bounded 10 m pilot DTM from the official LiDAR WCS."""
-    target = save_lidar_subset(geometry, output)
+    """Download a bounded, server-resampled DTM from the official LiDAR WCS."""
+    target = save_lidar_subset(geometry, output, output_resolution_metres=resolution_metres)
     typer.echo(f"Created {target}")
 
 

@@ -20,6 +20,13 @@ and classifications, creates the 2 km grid, queries sampling points, and reports
 area, cell count, open-river monitoring coverage, 2024 observations, and observed
 spatial-cell count as a seven-day artifact.
 
+The `cross-catchment-public-features` workflow then rebuilds Lune and Wyre as
+independent matrix jobs. Both use the same 2 km grid, 2024 observation window,
+determinands, and 20 m WCS-resampled LiDAR product. The common terrain resolution
+keeps the larger Lune request below the download safety cap and prevents a
+resolution difference from becoming a hidden catchment signal. Cells outside
+LiDAR coverage are retained with a zero pixel count and missing terrain values.
+
 ## Google Colab: complete pilot
 
 Open `notebooks/02_end_to_end_colab.ipynb` in Colab. It clones the repository,

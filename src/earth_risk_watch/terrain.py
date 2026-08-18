@@ -98,7 +98,20 @@ def terrain_features(dtm_path: Path, grid_path: Path) -> pd.DataFrame:
             values = filled[valid]
             slopes = slope[valid & np.isfinite(slope)]
             if values.size == 0 or slopes.size == 0:
-                raise ValueError(f"No valid LiDAR pixels for {cell.cell_id}")
+                records.append(
+                    {
+                        "cell_id": cell.cell_id,
+                        "elevation_mean_m": np.nan,
+                        "elevation_std_m": np.nan,
+                        "elevation_min_m": np.nan,
+                        "elevation_max_m": np.nan,
+                        "relief_m": np.nan,
+                        "slope_mean_degrees": np.nan,
+                        "slope_p90_degrees": np.nan,
+                        "valid_pixel_count": 0,
+                    }
+                )
+                continue
             records.append(
                 {
                     "cell_id": cell.cell_id,
@@ -123,7 +136,9 @@ def save_terrain_features(dtm_path: Path, grid_path: Path, output: Path) -> Path
     provenance = {
         "grain": "cell_id",
         "rows": len(frame),
-        "source_product": "EA LIDAR Composite DTM 1m, server-resampled to 10m",
+        "cells_with_lidar": int((frame["valid_pixel_count"] > 0).sum()),
+        "cells_without_lidar": int((frame["valid_pixel_count"] == 0).sum()),
+        "source_product": "EA LIDAR Composite DTM 1m, server-resampled by WCS",
         "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
     }
     output.with_suffix(output.suffix + ".provenance.json").write_text(

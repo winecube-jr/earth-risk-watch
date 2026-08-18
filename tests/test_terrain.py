@@ -49,3 +49,29 @@ def test_terrain_features(tmp_path: Path) -> None:
     assert result.loc[0, "relief_m"] == 99
     assert result.loc[0, "valid_pixel_count"] == 100
     assert result.loc[0, "slope_mean_degrees"] > 0
+
+
+def test_terrain_features_records_missing_lidar_coverage(tmp_path: Path) -> None:
+    raster = tmp_path / "dtm.tif"
+    with rasterio.open(
+        raster,
+        "w",
+        driver="GTiff",
+        height=2,
+        width=2,
+        count=1,
+        dtype="float32",
+        nodata=-9999,
+        crs="EPSG:27700",
+        transform=from_origin(0, 20, 10, 10),
+    ) as target:
+        target.write(np.full((2, 2), -9999, dtype="float32"), 1)
+    grid = tmp_path / "grid.geojson"
+    gpd.GeoDataFrame({"cell_id": ["cell-empty"]}, geometry=[box(0, 0, 20, 20)], crs=27700).to_file(
+        grid, driver="GeoJSON"
+    )
+
+    result = terrain_features(raster, grid)
+
+    assert result.loc[0, "valid_pixel_count"] == 0
+    assert np.isnan(result.loc[0, "elevation_mean_m"])

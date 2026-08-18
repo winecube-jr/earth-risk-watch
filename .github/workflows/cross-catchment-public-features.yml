@@ -1,0 +1,87 @@
+name: cross-catchment-public-features
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-area-features:
+    strategy:
+      fail-fast: false
+      matrix:
+        area_id: [lune-management, wyre-management]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[geo]"
+      - name: Extract public sources and build terrain features
+        env:
+          AREA_ID: ${{ matrix.area_id }}
+        run: |
+          earth-risk extract-study-area "$AREA_ID"
+          earth-risk build-grid \
+            --geometry "data/raw/study-areas/$AREA_ID.geojson" \
+            --output "data/staged/study-areas/$AREA_ID-grid.geojson"
+          earth-risk extract-water-sampling-points \
+            --geometry "data/raw/study-areas/$AREA_ID.geojson" \
+            --output "data/raw/study-areas/$AREA_ID-sampling-points.geojson"
+          earth-risk extract-water-observations \
+            --sampling-points "data/raw/study-areas/$AREA_ID-sampling-points.geojson" \
+            --output "data/features/study-areas/$AREA_ID-observations-2024.parquet"
+          earth-risk extract-lidar-terrain \
+            --geometry "data/raw/study-areas/$AREA_ID.geojson" \
+            --output "data/raw/study-areas/$AREA_ID-dtm-20m.tif" \
+            --resolution-metres 20
+          earth-risk build-terrain-features \
+            --dtm "data/raw/study-areas/$AREA_ID-dtm-20m.tif" \
+            --grid "data/staged/study-areas/$AREA_ID-grid.geojson" \
+            --output "data/features/study-areas/$AREA_ID-terrain-20m.parquet"
+      - name: Summarise coverage
+        env:
+          AREA_ID: ${{ matrix.area_id }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          import pandas as pd
+
+          area_id = os.environ["AREA_ID"]
+          terrain = pd.read_parquet(
+              f"data/features/study-areas/{area_id}-terrain-20m.parquet"
+          )
+          observations = pd.read_parquet(
+              f"data/features/study-areas/{area_id}-observations-2024.parquet"
+          )
+          summary = {
+              "area_id": area_id,
+              "terrain_cells": len(terrain),
+              "terrain_cells_with_lidar": int((terrain["valid_pixel_count"] > 0).sum()),
+              "terrain_cells_without_lidar": int((terrain["valid_pixel_count"] == 0).sum()),
+              "observations_2024": len(observations),
+          }
+          target = Path(f"data/products/study-areas/{area_id}-public-summary.json")
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+          print(json.dumps(summary, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: earth-risk-watch-${{ matrix.area_id }}-public-features
+          path: |
+            data/raw/study-areas/*.geojson
+            data/raw/study-areas/*.json
+            data/staged/study-areas/
+            data/features/study-areas/
+            data/products/study-areas/
+          retention-days: 7
+          if-no-files-found: error
