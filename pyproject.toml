@@ -50,7 +50,7 @@ notebook = [
 dev = [
   "earth-risk-watch[geo,model]",
   "bandit>=1.7,<2",
-  "mypy>=1.11,<2",
+  "mypy>=1.11,<3",
   "pytest>=8.3,<9",
   "pytest-cov>=5,<8",
   "respx>=0.21,<1",
