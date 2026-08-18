@@ -1,0 +1,12 @@
+era5_land:
+  asset: ECMWF/ERA5_LAND/DAILY_AGGR
+  period: [2024-01-01, 2025-01-01]
+  source_resolution_metres: 11132
+  export_scale_metres: 1000
+  export_buffer_metres: 20000
+  precipitation_source_band: total_precipitation_sum
+  precipitation_output_units: millimetres
+  wet_day_threshold_mm: 1
+  heavy_rain_day_threshold_mm: 10
+  soil_moisture_source_band: volumetric_soil_water_layer_1
+  interpretation: broad reanalysis context, not local observed rainfall

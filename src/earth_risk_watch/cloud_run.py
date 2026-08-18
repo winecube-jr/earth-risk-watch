@@ -39,6 +39,18 @@ WORLDCOVER_CLASSES = {
     "wetland_fraction": 90,
 }
 
+RAINFALL_BANDS = (
+    "precipitation_2024_mm",
+    "precipitation_q1_mm",
+    "precipitation_q2_mm",
+    "precipitation_q3_mm",
+    "precipitation_q4_mm",
+    "wet_days_2024",
+    "heavy_rain_days_2024",
+    "maximum_daily_precipitation_2024_mm",
+    "soil_moisture_layer_1_mean_2024",
+)
+
 
 def run_pilot_summary(geometry_path: Path, output: Path) -> Path:  # pragma: no cover
     """Run a low-volume annual Sentinel summary over the pilot catchment."""
@@ -536,6 +548,128 @@ def download_worldcover_pressure_grid(
         "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "licence": "CC-BY-4.0",
         "warning": "Static 2021 land cover; class fractions are pressure proxies, not loads.",
+    }
+    output.with_suffix(output.suffix + ".provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
+    return output
+
+
+def download_era5_land_rainfall_grid(
+    geometry_path: Path,
+    output: Path,
+    *,
+    buffer_metres: int = 20_000,
+    scale_metres: int = 1_000,
+) -> Path:  # pragma: no cover
+    """Download 2024 ERA5-Land rainfall and wetness context bands."""
+    import ee
+    import rasterio
+    from rasterio.io import MemoryFile
+
+    settings = Settings()
+    if settings.earthengine_project is None:
+        raise RuntimeError("EARTHENGINE_PROJECT is not configured")
+    if buffer_metres < 0:
+        raise ValueError("buffer_metres must not be negative")
+    if scale_metres < 1_000:
+        raise ValueError("scale_metres must be at least 1000")
+    ee.Initialize(project=settings.earthengine_project)
+    geometry_geojson: dict[str, Any] = json.loads(geometry_path.read_text(encoding="utf-8"))
+
+    def coordinate_pairs(value: Any) -> list[tuple[float, float]]:
+        if (
+            isinstance(value, list)
+            and len(value) >= 2
+            and isinstance(value[0], int | float)
+            and isinstance(value[1], int | float)
+        ):
+            return [(float(value[0]), float(value[1]))]
+        if isinstance(value, list):
+            return [pair for item in value for pair in coordinate_pairs(item)]
+        if isinstance(value, dict):
+            return [pair for item in value.values() for pair in coordinate_pairs(item)]
+        return []
+
+    pairs = [
+        pair
+        for feature in geometry_geojson["features"]
+        for pair in coordinate_pairs(feature["geometry"])
+    ]
+    longitudes, latitudes = zip(*pairs, strict=True)
+    middle_latitude = (min(latitudes) + max(latitudes)) / 2
+    latitude_buffer = buffer_metres / 111_320
+    longitude_buffer = buffer_metres / (111_320 * math.cos(math.radians(middle_latitude)))
+    geometry = ee.Geometry.BBox(
+        min(longitudes) - longitude_buffer,
+        min(latitudes) - latitude_buffer,
+        max(longitudes) + longitude_buffer,
+        max(latitudes) + latitude_buffer,
+    )
+    source = ee.ImageCollection("ECMWF/ERA5_LAND/DAILY_AGGR").filterDate("2024-01-01", "2025-01-01")
+    precipitation = source.select("total_precipitation_sum")
+    annual = precipitation.sum().max(0).multiply(1_000).rename(RAINFALL_BANDS[0])
+    quarter_bands = []
+    for index, (start, end) in enumerate(
+        [
+            ("2024-01-01", "2024-04-01"),
+            ("2024-04-01", "2024-07-01"),
+            ("2024-07-01", "2024-10-01"),
+            ("2024-10-01", "2025-01-01"),
+        ],
+        1,
+    ):
+        quarter_bands.append(
+            precipitation.filterDate(start, end)
+            .sum()
+            .max(0)
+            .multiply(1_000)
+            .rename(f"precipitation_q{index}_mm")
+        )
+    wet_days = precipitation.map(lambda image: image.gt(0.001)).sum().rename(RAINFALL_BANDS[5])
+    heavy_days = precipitation.map(lambda image: image.gt(0.01)).sum().rename(RAINFALL_BANDS[6])
+    maximum_daily = precipitation.max().max(0).multiply(1_000).rename(RAINFALL_BANDS[7])
+    soil_moisture = source.select("volumetric_soil_water_layer_1").mean().rename(RAINFALL_BANDS[8])
+    image = ee.Image.cat(
+        [annual, *quarter_bands, wet_days, heavy_days, maximum_daily, soil_moisture]
+    )
+    url = image.resample("bilinear").getDownloadURL(
+        {
+            "name": f"era5-land-rainfall-2024-{scale_metres}m",
+            "region": geometry,
+            "scale": scale_metres,
+            "format": "GEO_TIFF",
+        }
+    )
+    with open_data_client(timeout_seconds=180) as client:
+        body = get_bytes(client, url, max_bytes=25_000_000)
+    with MemoryFile(body) as memory_file, memory_file.open() as downloaded:
+        profile = downloaded.profile.copy()
+        values = downloaded.read().astype("float32")
+    if values.shape[0] != len(RAINFALL_BANDS):
+        raise ValueError("Earth Engine returned an unexpected ERA5-Land band count")
+    profile.update(dtype="float32", compress="deflate", nodata=None)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with rasterio.open(output, "w", **profile) as target:
+        target.write(values)
+        for index, band_name in enumerate(RAINFALL_BANDS, 1):
+            target.set_band_description(index, band_name)
+    provenance = {
+        "created_at": datetime.now(UTC).isoformat(),
+        "earth_engine_project": settings.earthengine_project,
+        "source": "ECMWF/ERA5_LAND/DAILY_AGGR",
+        "period": ["2024-01-01", "2025-01-01"],
+        "source_resolution_metres": 11_132,
+        "export_scale_metres": scale_metres,
+        "resampling": "bilinear; export grid adds no spatial information",
+        "precipitation_units": "millimetres",
+        "wet_day_threshold_mm": 1,
+        "heavy_rain_day_threshold_mm": 10,
+        "bands": list(RAINFALL_BANDS),
+        "buffer_metres": buffer_metres,
+        "bytes": output.stat().st_size,
+        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "warning": "Broad reanalysis context, not site-scale observed rainfall or event loads.",
     }
     output.with_suffix(output.suffix + ".provenance.json").write_text(
         json.dumps(provenance, indent=2) + "\n", encoding="utf-8"

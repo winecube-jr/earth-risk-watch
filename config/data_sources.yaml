@@ -79,6 +79,14 @@ sources:
     geography: UK
     licence: Open Government Licence 3.0
     themes: [climate]
+  - id: era5-land-daily
+    title: ERA5-Land Daily Aggregated Climate Reanalysis
+    provider: ECMWF / Copernicus Climate Change Service
+    access: earth_engine
+    endpoint: ECMWF/ERA5_LAND/DAILY_AGGR
+    geography: Global
+    licence: Copernicus C3S/CAMS licence and attribution requirements
+    themes: [climate, water, land]
   - id: merit-hydro
     title: MERIT Hydro Global Hydrography
     provider: University of Tokyo

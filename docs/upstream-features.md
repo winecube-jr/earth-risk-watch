@@ -49,6 +49,29 @@ while built-up fractions range from approximately 0.001 to 0.020. These are
 engineering validation results showing that the extraction and aggregation
 contracts work; they are not evidence of a relationship with water quality.
 
+## Rainfall and wetness context
+
+The climate contract uses the ERA5-Land Daily Aggregated reanalysis for calendar
+year 2024. It derives annual and quarterly precipitation totals in millimetres,
+counts days above 1 mm and 10 mm, retains maximum daily precipitation, and
+calculates mean upper-layer volumetric soil moisture. These bands use the same
+coverage-aware watershed aggregation contract as land cover.
+
+ERA5-Land's effective source resolution is approximately 11.1 km. The pipeline
+exports a bilinearly resampled 1 km grid so small watershed polygons can be
+processed consistently, but this adds no spatial information and must never be
+described as 1 km rainfall evidence. It represents broad reanalysis context,
+not rain-gauge observations, local convective rainfall, event-specific antecedent
+conditions or pollutant mobilisation. A later UK-focused comparison should use
+HadUK-Grid under its applicable access and licensing terms.
+
+The first pilot export is a 74 by 109 pixel, nine-band GeoTIFF of 0.21 MB, and
+all six complete watersheds have full raster coverage. Mean annual precipitation
+ranges from approximately 1,388 to 1,424 mm, mean wet-day counts from 218 to 220,
+and mean heavy-rain-day counts from 38.5 to 41.0. The narrow between-site range
+is consistent with the coarse effective resolution and confirms that this layer
+should provide temporal and regional context rather than fine local separation.
+
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,
 sub-basin and total upstream area, plus upstream climate, land-cover, soil,

@@ -8,6 +8,7 @@ import typer
 
 from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.cloud_run import (
+    download_era5_land_rainfall_grid,
     download_merit_routing_grid,
     download_worldcover_pressure_grid,
     run_dem_grid_features,
@@ -202,6 +203,20 @@ def extract_worldcover_pressure_grid(
 ) -> None:
     """Download 2021 ESA WorldCover class fractions for upstream aggregation."""
     target = download_worldcover_pressure_grid(
+        geometry, output, buffer_metres=buffer_metres, scale_metres=scale_metres
+    )
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-rainfall-pressure-grid")
+def extract_rainfall_pressure_grid(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/raw/climate/pilot-era5-land-2024-1km.tif"),
+    buffer_metres: int = typer.Option(20_000, min=0),
+    scale_metres: int = typer.Option(1_000, min=1_000),
+) -> None:
+    """Download 2024 ERA5-Land rainfall and soil-wetness context."""
+    target = download_era5_land_rainfall_grid(
         geometry, output, buffer_metres=buffer_metres, scale_metres=scale_metres
     )
     typer.echo(f"Created {target}")
