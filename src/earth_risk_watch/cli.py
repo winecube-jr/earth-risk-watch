@@ -22,6 +22,7 @@ from earth_risk_watch.extract.ea_catchments import (
 )
 from earth_risk_watch.extract.water_quality import save_pilot_observations, save_sampling_points
 from earth_risk_watch.grid import build_clipped_grid
+from earth_risk_watch.model import save_fixed_baseline_evaluation
 from earth_risk_watch.monitoring_features import save_monitoring_feature_table
 from earth_risk_watch.outcomes import build_ecological_outcomes
 from earth_risk_watch.publish import build_risk_map
@@ -270,6 +271,16 @@ def build_validation_partitions_command(
         parse_partition_paths(external),
         output,
     )
+    typer.echo(f"Created {target}")
+
+
+@app.command("evaluate-fixed-baseline")
+def evaluate_fixed_baseline_command(
+    table: Path = Path("data/features/validation/geographic-partitions.parquet"),
+    output: Path = Path("data/products/model/wyre-fixed-baseline.parquet"),
+) -> None:
+    """Fit the preregistered development baseline and evaluate on the holdout."""
+    target = save_fixed_baseline_evaluation(table, output)
     typer.echo(f"Created {target}")
 
 

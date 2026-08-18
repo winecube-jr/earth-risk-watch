@@ -1,0 +1,28 @@
+name: fixed-ridge-log1p-v1
+model: ridge
+alpha: 1.0
+target: target_mean
+target_transform: log1p
+categorical_features: [season]
+numeric_features:
+  - NDVI_mean
+  - NDVI_stdDev
+  - NDMI_mean
+  - NDMI_stdDev
+  - MNDWI_mean
+  - MNDWI_stdDev
+  - BSI_mean
+  - BSI_stdDev
+  - dem_elevation_mean_m
+  - dem_elevation_std_m
+  - dem_elevation_min_m
+  - dem_elevation_max_m
+  - dem_slope_mean_degrees
+  - dem_slope_std_degrees
+rules:
+  - Fit one model per determinand.
+  - Fit preprocessing only on development rows.
+  - Do not tune features, alpha, or thresholds against Wyre.
+  - Compare against the development-median baseline.
+  - Report MAE, R-squared, Spearman correlation, and baseline-relative MAE skill.
+  - Clip back-transformed predictions at zero.

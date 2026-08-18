@@ -100,3 +100,7 @@ module = [
   "shapely.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn", "sklearn.*"]
+ignore_missing_imports = true
