@@ -1,0 +1,52 @@
+name: public-data-pipeline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-public-features:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[geo]"
+      - name: Extract bounded public data
+        run: |
+          earth-risk extract-ea-pilot
+          earth-risk extract-ea-geometry
+          earth-risk build-grid
+          earth-risk extract-water-sampling-points
+          earth-risk extract-water-observations
+          earth-risk extract-lidar-terrain
+          earth-risk build-terrain-features
+      - name: Summarise outputs
+        run: |
+          python - <<'PY'
+          import geopandas as gpd
+          import pandas as pd
+
+          print("grid cells", len(gpd.read_file("data/staged/grid/pilot-2km.geojson")))
+          print("sampling points", len(gpd.read_file("data/raw/water-quality/pilot-sampling-points.geojson")))
+          print("observations", len(pd.read_parquet("data/features/water-quality/pilot-2024.parquet")))
+          print("terrain cells", len(pd.read_parquet("data/features/terrain/pilot-2km.parquet")))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: earth-risk-watch-public-pilot
+          path: |
+            data/raw/ea-catchments/
+            data/raw/water-quality/
+            data/raw/lidar/*.provenance.json
+            data/staged/grid/
+            data/features/water-quality/
+            data/features/terrain/
+          retention-days: 7
+          if-no-files-found: error
