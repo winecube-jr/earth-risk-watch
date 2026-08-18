@@ -16,6 +16,7 @@ from earth_risk_watch.feature_table import (
     rows_from_earth_engine,
     validate_feature_table,
 )
+from earth_risk_watch.hydrology import rows_from_hydrology_earth_engine
 from earth_risk_watch.satellite import (
     INDEX_BANDS,
     build_composite,
@@ -222,6 +223,53 @@ def run_dem_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no 
         "cells": int(frame["cell_id"].nunique()),
         "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "role": "Common-coverage terrain baseline; LiDAR remains supplementary.",
+    }
+    output.with_suffix(output.suffix + ".provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
+    return output
+
+
+def run_hydrology_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no cover
+    """Extract common MERIT Hydro context for every modelling cell."""
+    import ee
+
+    settings = Settings()
+    if settings.earthengine_project is None:
+        raise RuntimeError("EARTHENGINE_PROJECT is not configured")
+    ee.Initialize(project=settings.earthengine_project)
+    grid_geojson: dict[str, Any] = json.loads(grid_path.read_text(encoding="utf-8"))
+    grid = ee.FeatureCollection(grid_geojson)
+    source = ee.Image("MERIT/Hydro/v1_0_1")
+    image = ee.Image.cat(
+        [source.select(band).unmask(0).rename(band) for band in ["upa", "hnd", "wth", "wat"]]
+    )
+    reducer = (
+        ee.Reducer.mean()
+        .combine(ee.Reducer.stdDev(), sharedInputs=True)
+        .combine(ee.Reducer.max(), sharedInputs=True)
+    )
+    reduced = image.reduceRegions(
+        collection=grid,
+        reducer=reducer,
+        scale=90,
+        tileScale=4,
+    ).getInfo()
+    frame = rows_from_hydrology_earth_engine(reduced["features"])
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_suffix(output.suffix + ".tmp")
+    frame.to_parquet(temporary, index=False)
+    os.replace(temporary, output)
+    provenance = {
+        "created_at": datetime.now(UTC).isoformat(),
+        "earth_engine_project": settings.earthengine_project,
+        "source": "MERIT/Hydro/v1_0_1",
+        "processing_scale_metres": 90,
+        "rows": len(frame),
+        "cells": int(frame["cell_id"].nunique()),
+        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "masked_pixel_rule": "MERIT masked pixels are filled with zero before aggregation",
+        "warning": "Hydrologic context only; not a delineated upstream pollution load.",
     }
     output.with_suffix(output.suffix + ".provenance.json").write_text(
         json.dumps(provenance, indent=2) + "\n", encoding="utf-8"

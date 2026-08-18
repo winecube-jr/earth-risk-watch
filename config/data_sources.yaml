@@ -71,3 +71,19 @@ sources:
     geography: UK
     licence: Open Government Licence 3.0
     themes: [climate]
+  - id: merit-hydro
+    title: MERIT Hydro Global Hydrography
+    provider: University of Tokyo
+    access: earth_engine
+    endpoint: MERIT/Hydro/v1_0_1
+    geography: Global
+    licence: ODbL 1.0 or CC-BY-NC 4.0; publication route requires review
+    themes: [water, land, climate]
+  - id: hydrobasins
+    title: HydroBASINS Standard Sub-basins
+    provider: HydroSHEDS / WWF
+    access: download_portal
+    endpoint: https://www.hydrosheds.org/products/hydrobasins
+    geography: Global
+    licence: HydroSHEDS licence; scientific educational and commercial use
+    themes: [water, land]

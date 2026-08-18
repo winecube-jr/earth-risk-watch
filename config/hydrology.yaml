@@ -1,0 +1,12 @@
+merit_hydro:
+  asset: MERIT/Hydro/v1_0_1
+  processing_scale_metres: 90
+  bands: [upa, hnd, wth, wat]
+  outputs:
+    - upstream_area_mean_km2
+    - upstream_area_max_km2
+    - height_above_drainage_mean_m
+    - height_above_drainage_std_m
+    - river_width_max_m
+    - permanent_water_fraction
+  interpretation: hydrologic context, not delineated upstream pollution load

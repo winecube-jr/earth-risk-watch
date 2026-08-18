@@ -10,6 +10,7 @@ from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.cloud_run import (
     run_dem_grid_features,
     run_grid_features,
+    run_hydrology_grid_features,
     run_pilot_summary,
     run_seasonal_summary,
 )
@@ -150,6 +151,16 @@ def dem_grid_features(
 ) -> None:
     """Build common-coverage Copernicus DEM features in Earth Engine."""
     target = run_dem_grid_features(grid, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("hydrology-grid-features")
+def hydrology_grid_features(
+    grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    output: Path = Path("data/features/hydrology/pilot-merit-90m.parquet"),
+) -> None:
+    """Build common MERIT Hydro context features in Earth Engine."""
+    target = run_hydrology_grid_features(grid, output)
     typer.echo(f"Created {target}")
 
 
