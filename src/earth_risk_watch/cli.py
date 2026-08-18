@@ -16,6 +16,7 @@ from earth_risk_watch.evidence import save_evidence_pack
 from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
     save_pilot_geometry,
+    save_study_area,
 )
 from earth_risk_watch.extract.water_quality import save_pilot_observations, save_sampling_points
 from earth_risk_watch.grid import build_clipped_grid
@@ -84,6 +85,17 @@ def extract_ea_geometry(
     """Download the official provisional pilot boundary."""
     target = save_pilot_geometry(output)
     typer.echo(f"Created {target}")
+
+
+@app.command("extract-study-area")
+def extract_study_area(
+    area_id: str,
+    output: Path = Path("data/raw/study-areas"),
+) -> None:
+    """Download geometry and classifications for a configured study area."""
+    geometry, classifications = save_study_area(area_id, output)
+    typer.echo(f"Created {geometry}")
+    typer.echo(f"Created {classifications}")
 
 
 @app.command("sentinel-summary")

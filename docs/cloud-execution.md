@@ -14,6 +14,11 @@ increases artifact storage.
 The workflow has read-only repository permissions, a 30-minute timeout, bounded
 downloads, and no secrets. It cannot run Earth Engine stages.
 
+The separate `study-area-inventory` workflow evaluates configured expansion
+areas without launching raster processing. It downloads the official geometry
+and classifications, creates the 2 km grid, queries sampling points, and reports
+area, cell count, and open-river monitoring coverage as a seven-day artifact.
+
 ## Google Colab: complete pilot
 
 Open `notebooks/02_end_to_end_colab.ipynb` in Colab. It clones the repository,

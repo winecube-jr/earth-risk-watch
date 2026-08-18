@@ -4,11 +4,13 @@ from pathlib import Path
 import httpx
 import respx
 
+from earth_risk_watch.areas import StudyArea
 from earth_risk_watch.extract.ea_catchments import (
     fetch_pilot_classifications,
     fetch_pilot_geometry,
     save_pilot_classifications,
     save_pilot_geometry,
+    save_study_area,
 )
 
 ENDPOINT = (
@@ -48,3 +50,29 @@ def test_pilot_geometry(tmp_path: Path) -> None:
         assert fetch_pilot_geometry(client)["type"] == "FeatureCollection"
         target = save_pilot_geometry(tmp_path / "pilot.geojson", client)
     assert json.loads(target.read_text(encoding="utf-8"))["type"] == "FeatureCollection"
+
+
+@respx.mock
+def test_save_study_area(tmp_path: Path, monkeypatch: object) -> None:
+    area = StudyArea(
+        id="test-area",
+        name="Test",
+        entity_type="OperationalCatchment",
+        entity_id="1",
+        role="test",
+    )
+    geometry_endpoint = f"{area.base_endpoint}.geojson"
+    classifications_endpoint = f"{area.base_endpoint}/classifications.csv"
+    respx.get(geometry_endpoint).mock(
+        return_value=httpx.Response(200, json={"type": "FeatureCollection", "features": []})
+    )
+    respx.get(classifications_endpoint).mock(return_value=httpx.Response(200, content=CSV))
+    monkeypatch.setattr(
+        "earth_risk_watch.extract.ea_catchments.load_study_areas",
+        lambda: type("Registry", (), {"by_id": lambda self, area_id: area})(),
+    )
+    with httpx.Client() as client:
+        geometry, classifications = save_study_area("test-area", tmp_path, client)
+    assert geometry.exists()
+    assert classifications.exists()
+    assert (tmp_path / "test-area.provenance.json").exists()

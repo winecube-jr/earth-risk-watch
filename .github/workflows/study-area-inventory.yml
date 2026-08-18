@@ -1,0 +1,79 @@
+name: study-area-inventory
+
+on:
+  workflow_dispatch:
+    inputs:
+      area_id:
+        description: Configured study-area ID
+        required: true
+        default: lune-management
+        type: choice
+        options:
+          - lune-management
+          - lune-rawthey-greta
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[geo]"
+      - name: Extract configured study area
+        env:
+          AREA_ID: ${{ inputs.area_id }}
+        run: |
+          earth-risk extract-study-area "$AREA_ID"
+          earth-risk build-grid \
+            --geometry "data/raw/study-areas/$AREA_ID.geojson" \
+            --output "data/staged/study-areas/$AREA_ID-grid.geojson"
+          earth-risk extract-water-sampling-points \
+            --geometry "data/raw/study-areas/$AREA_ID.geojson" \
+            --output "data/raw/study-areas/$AREA_ID-sampling-points.geojson"
+      - name: Build inventory summary
+        env:
+          AREA_ID: ${{ inputs.area_id }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          import geopandas as gpd
+
+          area_id = os.environ["AREA_ID"]
+          grid = gpd.read_file(f"data/staged/study-areas/{area_id}-grid.geojson")
+          points = gpd.read_file(f"data/raw/study-areas/{area_id}-sampling-points.geojson")
+          summary = {
+              "area_id": area_id,
+              "grid_cells": len(grid),
+              "area_km2": float(grid.to_crs(27700).area.sum() / 1_000_000),
+              "sampling_points": len(points),
+              "open_river_points": int(
+                  ((points["status"] == "OPEN") &
+                   (points["point_type"] == "FRESHWATER - RIVERS")).sum()
+              ),
+          }
+          Path("data/products/inventory").mkdir(parents=True, exist_ok=True)
+          Path("data/products/inventory/summary.json").write_text(
+              json.dumps(summary, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(summary, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: earth-risk-watch-${{ inputs.area_id }}-inventory
+          path: |
+            data/raw/study-areas/
+            data/staged/study-areas/
+            data/products/inventory/
+          retention-days: 7
+          if-no-files-found: error

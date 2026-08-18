@@ -1,0 +1,12 @@
+areas:
+  - id: lune-rawthey-greta
+    name: Lune - Rawthey to Greta
+    entity_type: OperationalCatchment
+    entity_id: "3290"
+    role: engineering-pilot
+  - id: lune-management
+    name: Lune Management Catchment
+    entity_type: ManagementCatchment
+    entity_id: "3053"
+    role: multi-catchment-expansion
+    operational_catchment_ids: ["3209", "3240", "3290", "3291", "3363", "3526"]

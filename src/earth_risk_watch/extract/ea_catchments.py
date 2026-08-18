@@ -10,6 +10,7 @@ from pathlib import Path
 
 import httpx
 
+from earth_risk_watch.areas import StudyArea, load_study_areas
 from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.http_client import get_bytes, open_data_client
 
@@ -78,3 +79,52 @@ def save_pilot_geometry(output: Path, client: httpx.Client | None = None) -> Pat
     temporary.write_bytes(body)
     os.replace(temporary, output)
     return output
+
+
+def fetch_area_file(
+    area: StudyArea,
+    suffix: str,
+    client: httpx.Client | None = None,
+    *,
+    max_bytes: int = 25_000_000,
+) -> bytes:
+    """Fetch a bounded file for any configured CDE study area."""
+    endpoint = f"{area.base_endpoint}{suffix}"
+    if client is not None:
+        return get_bytes(client, endpoint, max_bytes=max_bytes)
+    with open_data_client(timeout_seconds=90) as managed_client:
+        return get_bytes(managed_client, endpoint, max_bytes=max_bytes)
+
+
+def save_study_area(
+    area_id: str,
+    output_dir: Path,
+    client: httpx.Client | None = None,
+) -> tuple[Path, Path]:
+    """Save official geometry and classifications for a configured study area."""
+    area = load_study_areas().by_id(area_id)
+    geometry_body = fetch_area_file(area, ".geojson", client)
+    geometry = json.loads(geometry_body)
+    if not isinstance(geometry, dict) or geometry.get("type") not in {
+        "Feature",
+        "FeatureCollection",
+    }:
+        raise ValueError("Expected a GeoJSON Feature or FeatureCollection")
+    classifications = fetch_area_file(area, "/classifications.csv", client)
+    rows = csv.DictReader(io.StringIO(classifications.decode("utf-8-sig")))
+    if not rows.fieldnames or next(rows, None) is None:
+        raise ValueError("Expected classification CSV records")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    geometry_path = output_dir / f"{area.id}.geojson"
+    classifications_path = output_dir / f"{area.id}-classifications.csv"
+    geometry_path.write_bytes((json.dumps(geometry, separators=(",", ":")) + "\n").encode())
+    classifications_path.write_bytes(classifications)
+    provenance = {
+        "study_area": area.model_dump(),
+        "geometry_sha256": hashlib.sha256(geometry_path.read_bytes()).hexdigest(),
+        "classifications_sha256": hashlib.sha256(classifications).hexdigest(),
+    }
+    (output_dir / f"{area.id}.provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
+    return geometry_path, classifications_path
