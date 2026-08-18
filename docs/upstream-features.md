@@ -8,12 +8,23 @@ Masked MERIT pixels are explicitly filled with zero before aggregation; for
 river width and permanent water this represents absence of a mapped feature at
 that pixel. Coverage validation still rejects null cell-level outputs.
 
-The next contract will snap each monitoring location to a drainage network,
-delineate or select its upstream contributing sub-basins, and aggregate pressure
-variables only within that contributing area. Candidate pressure inputs include
+The site-scale contract now snaps each monitoring location to the maximum MERIT
+upstream-area pixel within a bounded search, traces its contributing D8 cells,
+and emits a dissolved watershed polygon. Truncated watersheds are excluded by
+default, while an explicit override is available for diagnosis. A generic raster
+aggregation command calculates valid-pixel count, coverage fraction, mean,
+standard deviation, minimum, maximum and sum for every named raster band inside
+each watershed. Candidate pressure inputs include
 land cover, rainfall and antecedent wetness, wastewater assets, urban impermeable
 surface, agricultural proxies, soils and geology. Every resulting field must
 record its source year, spatial support, aggregation rule and missing coverage.
+
+The compact repository pilot fixture contains nine actively monitored sites.
+With its 20 km buffered routing extract, six yield complete, valid polygons and
+three larger lower-catchment watersheds reach the raster boundary and are
+excluded. This differs from the expanded Lune validation run because the latter
+uses a larger source boundary. Boundary status is therefore an extent-quality
+check, not an intrinsic classification of a monitoring site.
 
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,

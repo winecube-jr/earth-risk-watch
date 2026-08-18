@@ -34,7 +34,11 @@ from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
-from earth_risk_watch.watershed import save_site_delineation_diagnostics
+from earth_risk_watch.watershed import (
+    save_site_delineation_diagnostics,
+    save_site_watershed_polygons,
+    save_watershed_raster_features,
+)
 
 app = typer.Typer(no_args_is_help=True, help="Earth Risk Watch pipeline tools.")
 catalogue_app = typer.Typer(no_args_is_help=True, help="Inspect configured data sources.")
@@ -204,6 +208,38 @@ def diagnose_site_watersheds(
         output,
         snap_radius_pixels=snap_radius_pixels,
     )
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-site-watersheds")
+def build_site_watersheds(
+    routing: Path,
+    points: Path,
+    observations: Path,
+    output: Path = Path("data/features/upstream/site-watersheds.geojson"),
+    snap_radius_pixels: int = typer.Option(5, min=0),
+    include_truncated: bool = False,
+) -> None:
+    """Build active-site D8 watershed polygons from a bounded routing grid."""
+    target = save_site_watershed_polygons(
+        routing,
+        points,
+        observations,
+        output,
+        snap_radius_pixels=snap_radius_pixels,
+        include_truncated=include_truncated,
+    )
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-upstream-raster-features")
+def build_upstream_raster_features(
+    watersheds: Path,
+    raster: Path,
+    output: Path = Path("data/features/upstream/site-raster-features.parquet"),
+) -> None:
+    """Summarize a named pressure raster within each site watershed."""
+    target = save_watershed_raster_features(watersheds, raster, output)
     typer.echo(f"Created {target}")
 
 

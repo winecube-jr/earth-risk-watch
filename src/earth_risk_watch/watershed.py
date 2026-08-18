@@ -7,6 +7,9 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
+from rasterio.features import geometry_mask, shapes
+from rasterio.mask import mask as raster_mask
+from shapely.geometry import shape
 
 D8_OFFSETS = {
     1: (0, 1),
@@ -122,6 +125,113 @@ def site_delineation_diagnostics(
     return pd.DataFrame(records).sort_values("point_notation").reset_index(drop=True)
 
 
+def site_watershed_polygons(
+    routing_path: Path,
+    points_path: Path,
+    observations_path: Path,
+    *,
+    snap_radius_pixels: int = 5,
+    include_truncated: bool = False,
+) -> gpd.GeoDataFrame:
+    """Delineate active sites and return one dissolved pixel polygon per site."""
+    points = gpd.read_file(points_path)
+    observations = pd.read_parquet(observations_path)
+    active = points.loc[points["notation"].isin(observations["point_notation"].unique())]
+    records = []
+    output_crs = None
+    with rasterio.open(routing_path) as source:
+        output_crs = source.crs
+        active = active.to_crs(source.crs)
+        flow_direction = source.read(1)
+        upstream_area = source.read(2)
+        for point in active.itertuples(index=False):
+            row, column = source.index(point.geometry.x, point.geometry.y)
+            snapped = snap_to_maximum_upstream_area(
+                upstream_area, row, column, radius_pixels=snap_radius_pixels
+            )
+            watershed = delineate_d8(flow_direction, snapped)
+            touches_boundary = bool(
+                watershed[0, :].any()
+                or watershed[-1, :].any()
+                or watershed[:, 0].any()
+                or watershed[:, -1].any()
+            )
+            if touches_boundary and not include_truncated:
+                continue
+            pixel_shapes = [
+                shape(geometry)
+                for geometry, value in shapes(
+                    watershed.astype("uint8"), mask=watershed, transform=source.transform
+                )
+                if value == 1
+            ]
+            geometry = pixel_shapes[0]
+            for part in pixel_shapes[1:]:
+                geometry = geometry.union(part)
+            records.append(
+                {
+                    "point_notation": point.notation,
+                    "snap_distance_pixels": float(np.hypot(snapped[0] - row, snapped[1] - column)),
+                    "outlet_upstream_area_km2": float(upstream_area[snapped]),
+                    "watershed_pixel_count": int(watershed.sum()),
+                    "touches_raster_boundary": touches_boundary,
+                    "geometry": geometry,
+                }
+            )
+    if not records:
+        raise ValueError("No complete active-site watersheds were delineated")
+    return (
+        gpd.GeoDataFrame(records, geometry="geometry", crs=output_crs)
+        .sort_values("point_notation")
+        .reset_index(drop=True)
+    )
+
+
+def watershed_raster_features(
+    watersheds_path: Path,
+    raster_path: Path,
+) -> pd.DataFrame:
+    """Aggregate every raster band within each site watershed with coverage checks."""
+    watersheds = gpd.read_file(watersheds_path)
+    if "point_notation" not in watersheds:
+        raise ValueError("Watersheds must contain point_notation")
+    if watersheds["point_notation"].duplicated().any():
+        raise ValueError("Watersheds contain duplicate point_notation values")
+    records: list[dict[str, object]] = []
+    with rasterio.open(raster_path) as source:
+        projected = watersheds.to_crs(source.crs)
+        band_names = [
+            description or f"band_{index}"
+            for index, description in enumerate(source.descriptions, 1)
+        ]
+        if len(set(band_names)) != len(band_names):
+            raise ValueError("Raster band descriptions must be unique")
+        for watershed in projected.itertuples(index=False):
+            values, transform = raster_mask(source, [watershed.geometry], crop=True, filled=False)
+            footprint = geometry_mask(
+                [watershed.geometry],
+                out_shape=values.shape[1:],
+                transform=transform,
+                invert=True,
+            )
+            footprint_count = int(footprint.sum())
+            record: dict[str, object] = {"point_notation": watershed.point_notation}
+            for band_index, band_name in enumerate(band_names):
+                band = values[band_index]
+                valid = band.compressed().astype("float64")
+                record[f"{band_name}_valid_pixel_count"] = int(valid.size)
+                record[f"{band_name}_coverage_fraction"] = (
+                    float(valid.size / footprint_count) if footprint_count else 0.0
+                )
+                record[f"{band_name}_mean"] = float(valid.mean()) if valid.size else np.nan
+                record[f"{band_name}_std"] = float(valid.std()) if valid.size else np.nan
+                record[f"{band_name}_min"] = float(valid.min()) if valid.size else np.nan
+                record[f"{band_name}_max"] = float(valid.max()) if valid.size else np.nan
+                record[f"{band_name}_sum"] = float(valid.sum()) if valid.size else np.nan
+            records.append(record)
+    return pd.DataFrame(records).sort_values("point_notation").reset_index(drop=True)
+
+
 def save_site_delineation_diagnostics(
     routing_path: Path,
     points_path: Path,
@@ -137,6 +247,40 @@ def save_site_delineation_diagnostics(
         observations_path,
         snap_radius_pixels=snap_radius_pixels,
     )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_parquet(output, index=False)
+    return output
+
+
+def save_site_watershed_polygons(
+    routing_path: Path,
+    points_path: Path,
+    observations_path: Path,
+    output: Path,
+    *,
+    snap_radius_pixels: int = 5,
+    include_truncated: bool = False,
+) -> Path:
+    """Save active-site watershed polygons as GeoJSON."""
+    frame = site_watershed_polygons(
+        routing_path,
+        points_path,
+        observations_path,
+        snap_radius_pixels=snap_radius_pixels,
+        include_truncated=include_truncated,
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_file(output, driver="GeoJSON")
+    return output
+
+
+def save_watershed_raster_features(
+    watersheds_path: Path,
+    raster_path: Path,
+    output: Path,
+) -> Path:
+    """Save per-site pressure-raster summaries as Parquet."""
+    frame = watershed_raster_features(watersheds_path, raster_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     frame.to_parquet(output, index=False)
     return output
