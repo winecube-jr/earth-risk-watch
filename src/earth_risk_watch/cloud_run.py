@@ -390,14 +390,16 @@ def download_merit_routing_grid(
     from rasterio.io import MemoryFile
 
     source = ee.Image("MERIT/Hydro/v1_0_1")
+    native_projection = source.select("dir").projection().getInfo()
     bodies = []
     with open_data_client(timeout_seconds=180) as client:
-        for band in ["dir", "upa"]:
+        for band in ["dir", "upa", "upg"]:
             url = source.select(band).getDownloadURL(
                 {
-                    "name": f"merit-{band}-90m",
+                    "name": f"merit-{band}-native",
                     "region": geometry,
-                    "scale": 90,
+                    "crs": native_projection["crs"],
+                    "crs_transform": native_projection["transform"],
                     "format": "GEO_TIFF",
                 }
             )
@@ -417,18 +419,20 @@ def download_merit_routing_grid(
                 raise ValueError("MERIT routing bands do not share one pixel grid")
     if profile is None:
         raise ValueError("Earth Engine returned no MERIT routing bands")
-    profile.update(count=2, dtype="float32", compress="deflate")
+    profile.update(count=3, dtype="float32", compress="deflate")
     output.parent.mkdir(parents=True, exist_ok=True)
     with rasterio.open(output, "w", **profile) as target:
         target.write(np.stack(arrays))
         target.set_band_description(1, "dir")
         target.set_band_description(2, "upa")
+        target.set_band_description(3, "upg")
     provenance = {
         "created_at": datetime.now(UTC).isoformat(),
         "earth_engine_project": settings.earthengine_project,
         "source": "MERIT/Hydro/v1_0_1",
-        "bands": ["dir", "upa"],
-        "processing_scale_metres": 90,
+        "bands": ["dir", "upa", "upg"],
+        "native_projection": native_projection,
+        "resampling": "none; native 3 arc-second affine grid preserves D8 topology",
         "region": "bounding rectangle of supplied geometry",
         "buffer_metres": buffer_metres,
         "source_download_bytes": sum(len(body) for body in bodies),

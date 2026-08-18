@@ -116,7 +116,7 @@ def test_site_watershed_polygons_builds_complete_active_site(tmp_path: Path) -> 
         driver="GTiff",
         width=5,
         height=5,
-        count=2,
+        count=3,
         dtype="float32",
         crs="EPSG:3857",
         transform=from_origin(0, 5, 1, 1),
@@ -125,6 +125,7 @@ def test_site_watershed_polygons_builds_complete_active_site(tmp_path: Path) -> 
         upstream_area = np.ones((5, 5), dtype="float32")
         upstream_area[2, 2] = 10
         target.write(upstream_area, 2)
+        target.write(np.ones((5, 5), dtype="float32"), 3)
     points_path = tmp_path / "points.geojson"
     gpd.GeoDataFrame(
         {"notation": ["active", "inactive"], "geometry": [box(2, 2, 3, 3).centroid] * 2},
@@ -139,6 +140,9 @@ def test_site_watershed_polygons_builds_complete_active_site(tmp_path: Path) -> 
 
     assert result["point_notation"].tolist() == ["active"]
     assert result.loc[0, "watershed_pixel_count"] == 1
+    assert result.loc[0, "outlet_upstream_pixel_count"] == 1
+    assert result.loc[0, "delineated_to_upstream_pixel_ratio"] == pytest.approx(1)
+    assert result.loc[0, "topology_consistent"]
     assert result.loc[0, "outlet_upstream_area_km2"] == pytest.approx(10)
     assert not result.loc[0, "touches_raster_boundary"]
     assert result.geometry.is_valid.all()

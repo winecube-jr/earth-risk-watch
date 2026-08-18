@@ -3,7 +3,8 @@ development_areas:
   - ribble-management
 external_validation_areas:
   - wyre-management
-untouched_external_validation_areas: []
+untouched_external_validation_areas:
+  - derwent-derbyshire
 external_evaluation_status:
   wyre-management:
     status: evaluated
@@ -14,6 +15,15 @@ external_evaluation_status:
     model: fixed-ridge-log1p-v1
     evaluated_on: "2026-08-18"
 future_model_changes_require_new_untouched_holdout: true
+upstream_v2_holdout:
+  area_id: derwent-derbyshire
+  frozen_on: "2026-08-18"
+  selection_inputs: [geographic contrast, catchment scale, mixed rural-urban context]
+  eligibility_gate:
+    minimum_complete_watershed_sites: 10
+    minimum_sites_per_modelled_determinand: 10
+  outcome_values_examined_before_selection: false
+  status: frozen-unprocessed
 minimum_development_monitored_cells: 30
 minimum_external_monitored_cells: 10
 minimum_external_catchments: 1

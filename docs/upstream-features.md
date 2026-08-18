@@ -120,12 +120,13 @@ many-to-many relationships. The new table is exploratory and cannot be used to
 revise or re-evaluate the frozen baseline on Wyre or Thames; a new untouched
 catchment is required for external evaluation of any redesigned model.
 
-The pilot consolidation produced six site rows with 63 upstream fields and 98
-site × season × determinand outcome rows covering pH, water temperature,
-ammoniacal nitrogen, nitrate and orthophosphate. All raster features have full
-coverage and the composite key has no duplicates. Six independent sites remain
-far below the 30-group readiness threshold, so the automated readiness result is
-false and no upstream predictive model is fitted at this stage.
+The first pilot and development consolidations passed schema and key checks, but
+a later hydrologic concordance audit showed that the nominal 90 m routing export
+had resampled the categorical D8 grid. Some traced polygon areas were less than
+one percent of MERIT's upstream area at the same outlet. All polygon-derived
+land-cover, climate and EDM features from that export are superseded and must not
+be modelled. The native-grid rebuild adds `upg` and requires traced pixel count
+to agree within 1% before a site is considered complete.
 
 The configured-area orchestration command, `earth-risk run-upstream-area
 AREA_ID`, now reproduces all upstream stages with deterministic paths and emits a
@@ -133,6 +134,10 @@ JSON summary containing the study-area role, active sites, complete and truncate
 watersheds, monitoring rows and readiness result. The companion Colab notebook
 runs this pipeline for the Lune and Ribble development areas so Earth Engine and
 data-extraction workloads remain off the local computer.
+
+Raster aggregation uses all pixels touched by a watershed boundary. This avoids
+undefined climate summaries for polygons smaller than the 1 km export grid, but
+does not change ERA5-Land's approximately 11.1 km effective information scale.
 
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,

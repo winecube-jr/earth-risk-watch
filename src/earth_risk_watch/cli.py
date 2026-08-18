@@ -19,6 +19,7 @@ from earth_risk_watch.cloud_run import (
     run_seasonal_summary,
 )
 from earth_risk_watch.demo import build_demo_manifest
+from earth_risk_watch.development import save_upstream_development_table
 from earth_risk_watch.diagnostics import save_evaluation_diagnostics
 from earth_risk_watch.evidence import save_evidence_pack
 from earth_risk_watch.extract.ea_catchments import (
@@ -333,6 +334,17 @@ def run_upstream_area_command(
 ) -> None:
     """Run all upstream feature stages for one configured study area."""
     target = run_upstream_area_pipeline(area_id, root, buffer_metres=buffer_metres, force=force)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-upstream-development-table")
+def build_upstream_development_table_command(
+    area: Annotated[list[str], typer.Option(help="Repeat AREA_ID=PATH for development")],
+    output: Path = Path("data/features/development/upstream-development.parquet"),
+    diagnostics: Path = Path("data/products/development/upstream-diagnostics.json"),
+) -> None:
+    """Combine topology-validated development catchments with fixed predictors."""
+    target = save_upstream_development_table(parse_partition_paths(area), output, diagnostics)
     typer.echo(f"Created {target}")
 
 

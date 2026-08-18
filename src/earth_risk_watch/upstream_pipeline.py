@@ -5,6 +5,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import rasterio
 
 from earth_risk_watch.areas import load_study_areas
 from earth_risk_watch.cloud_run import (
@@ -28,6 +29,17 @@ from earth_risk_watch.watershed import (
 )
 
 
+def routing_grid_is_current(path: Path) -> bool:
+    """Return whether a routing artifact has the native topology-check bands."""
+    if not path.exists():
+        return False
+    try:
+        with rasterio.open(path) as source:
+            return bool(source.descriptions == ("dir", "upa", "upg"))
+    except rasterio.errors.RasterioError:
+        return False
+
+
 def run_upstream_area_pipeline(
     area_id: str,
     root: Path = Path("data"),
@@ -49,7 +61,7 @@ def run_upstream_area_pipeline(
     routing = root / "raw" / "hydrology" / f"{area_id}-merit-routing-90m.tif"
     land_cover = root / "raw" / "land-cover" / f"{area_id}-worldcover-100m.tif"
     climate = root / "raw" / "climate" / f"{area_id}-era5-land-2024-1km.tif"
-    if force or not routing.exists():
+    if force or not routing_grid_is_current(routing):
         download_merit_routing_grid(geometry, routing, buffer_metres=buffer_metres)
     if force or not land_cover.exists():
         download_worldcover_pressure_grid(geometry, land_cover, buffer_metres=buffer_metres)
@@ -102,6 +114,7 @@ def run_upstream_area_pipeline(
         "active_monitoring_sites": len(diagnostic_frame),
         "complete_watersheds": len(watershed_frame),
         "truncated_watersheds": int(diagnostic_frame["touches_raster_boundary"].sum()),
+        "topology_inconsistent_watersheds": int((~diagnostic_frame["topology_consistent"]).sum()),
         "monitoring_rows": len(monitoring_frame),
         "modelling_readiness": site_modelling_readiness(monitoring_frame),
         "warning": "Engineering output; external-validation roles must not inform model tuning.",

@@ -10,7 +10,9 @@ merit_hydro:
     - river_width_max_m
     - permanent_water_fraction
   interpretation: hydrologic context, not delineated upstream pollution load
-  routing_export_bands: [dir, upa]
+  routing_export_bands: [dir, upa, upg]
+  routing_export_grid: native 3 arc-second affine transform; no resampling
+  topology_concordance_relative_tolerance: 0.01
   site_snap_radius_pixels: 5
   routing_export_buffer_metres: 20000
 hydroatlas:

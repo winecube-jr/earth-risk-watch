@@ -18,8 +18,11 @@ def test_load_study_areas() -> None:
     assert development_area.entity_id == "3070"
     assert development_area.role == "development-expansion"
     untouched_area = registry.by_id("thames-chilterns-south")
+    upstream_holdout = registry.by_id("derwent-derbyshire")
     assert untouched_area.entity_id == "3098"
     assert untouched_area.role == "untouched-external-validation"
+    assert upstream_holdout.entity_id == "3026"
+    assert upstream_holdout.role == "untouched-external-validation-v2"
 
 
 def test_study_area_ids_must_be_unique(tmp_path: Path) -> None:

@@ -51,6 +51,8 @@ Configured-area runs are resumable. Existing routing, WorldCover and ERA5-Land
 rasters are reused by default after a transient failure; pass `--force` only for
 an intentional full rebuild. Bounded downloads retry transport failures up to
 three times, and WorldCover uses a five-minute timeout for each attempt.
+Legacy two-band routing rasters are detected automatically and replaced by the
+native-grid three-band contract before any downstream feature is rebuilt.
 
 Wyre and Thames are intentionally absent from this notebook. Their evaluations
 have already been consumed, so they may be processed only for engineering

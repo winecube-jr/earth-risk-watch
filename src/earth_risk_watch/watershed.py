@@ -23,6 +23,20 @@ D8_OFFSETS = {
 }
 
 
+def _routing_concordance(
+    watershed: np.ndarray,
+    upstream_pixels: np.ndarray | None,
+    outlet: tuple[int, int],
+) -> tuple[float, float, bool]:
+    """Compare traced cells with MERIT's upstream-pixel count when available."""
+    if upstream_pixels is None:
+        return float("nan"), float("nan"), True
+    expected = float(upstream_pixels[outlet])
+    ratio = float(watershed.sum() / expected) if np.isfinite(expected) and expected > 0 else np.nan
+    consistent = bool(np.isfinite(ratio) and np.isclose(ratio, 1.0, rtol=0.01))
+    return expected, ratio, consistent
+
+
 def snap_to_maximum_upstream_area(
     upstream_area: np.ndarray,
     row: int,
@@ -97,12 +111,16 @@ def site_delineation_diagnostics(
         active = active.to_crs(source.crs)
         flow_direction = source.read(1)
         upstream_area = source.read(2)
+        upstream_pixels = source.read(3) if source.count >= 3 else None
         for point in active.itertuples(index=False):
             row, column = source.index(point.geometry.x, point.geometry.y)
             snapped = snap_to_maximum_upstream_area(
                 upstream_area, row, column, radius_pixels=snap_radius_pixels
             )
             watershed = delineate_d8(flow_direction, snapped)
+            expected_pixels, concordance, topology_consistent = _routing_concordance(
+                watershed, upstream_pixels, snapped
+            )
             touches_boundary = bool(
                 watershed[0, :].any()
                 or watershed[-1, :].any()
@@ -119,6 +137,9 @@ def site_delineation_diagnostics(
                     "snap_distance_pixels": float(np.hypot(snapped[0] - row, snapped[1] - column)),
                     "outlet_upstream_area_km2": float(upstream_area[snapped]),
                     "watershed_pixel_count": int(watershed.sum()),
+                    "outlet_upstream_pixel_count": expected_pixels,
+                    "delineated_to_upstream_pixel_ratio": concordance,
+                    "topology_consistent": topology_consistent,
                     "touches_raster_boundary": touches_boundary,
                 }
             )
@@ -144,19 +165,23 @@ def site_watershed_polygons(
         active = active.to_crs(source.crs)
         flow_direction = source.read(1)
         upstream_area = source.read(2)
+        upstream_pixels = source.read(3) if source.count >= 3 else None
         for point in active.itertuples(index=False):
             row, column = source.index(point.geometry.x, point.geometry.y)
             snapped = snap_to_maximum_upstream_area(
                 upstream_area, row, column, radius_pixels=snap_radius_pixels
             )
             watershed = delineate_d8(flow_direction, snapped)
+            expected_pixels, concordance, topology_consistent = _routing_concordance(
+                watershed, upstream_pixels, snapped
+            )
             touches_boundary = bool(
                 watershed[0, :].any()
                 or watershed[-1, :].any()
                 or watershed[:, 0].any()
                 or watershed[:, -1].any()
             )
-            if touches_boundary and not include_truncated:
+            if (touches_boundary and not include_truncated) or not topology_consistent:
                 continue
             pixel_shapes = [
                 shape(geometry)
@@ -174,6 +199,9 @@ def site_watershed_polygons(
                     "snap_distance_pixels": float(np.hypot(snapped[0] - row, snapped[1] - column)),
                     "outlet_upstream_area_km2": float(upstream_area[snapped]),
                     "watershed_pixel_count": int(watershed.sum()),
+                    "outlet_upstream_pixel_count": expected_pixels,
+                    "delineated_to_upstream_pixel_ratio": concordance,
+                    "topology_consistent": topology_consistent,
                     "touches_raster_boundary": touches_boundary,
                     "geometry": geometry,
                 }
@@ -207,12 +235,19 @@ def watershed_raster_features(
         if len(set(band_names)) != len(band_names):
             raise ValueError("Raster band descriptions must be unique")
         for watershed in projected.itertuples(index=False):
-            values, transform = raster_mask(source, [watershed.geometry], crop=True, filled=False)
+            values, transform = raster_mask(
+                source,
+                [watershed.geometry],
+                crop=True,
+                filled=False,
+                all_touched=True,
+            )
             footprint = geometry_mask(
                 [watershed.geometry],
                 out_shape=values.shape[1:],
                 transform=transform,
                 invert=True,
+                all_touched=True,
             )
             footprint_count = int(footprint.sum())
             record: dict[str, object] = {"point_notation": watershed.point_notation}

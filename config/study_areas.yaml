@@ -25,3 +25,8 @@ areas:
     entity_type: ManagementCatchment
     entity_id: "3098"
     role: untouched-external-validation
+  - id: derwent-derbyshire
+    name: Derwent Derbyshire Management Catchment
+    entity_type: ManagementCatchment
+    entity_id: "3026"
+    role: untouched-external-validation-v2

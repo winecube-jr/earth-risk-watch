@@ -44,7 +44,22 @@ Earth Engine memory use and makes boundary truncation straightforward to test.
 The current routing export adds a 20 km buffer, and diagnostics still reject any
 watershed that reaches the buffered boundary.
 
-The first Lune run traced all 33 active monitoring locations. Nine watersheds
-touched the unbuffered raster boundary; none touched the 20 km buffered boundary.
-The buffered 1,234 by 1,570 pixel two-band routing raster is 3.1 MB, making the
-approach practical for bounded cloud exports and ephemeral workers.
+Flow direction is categorical topology, so production routing exports now use
+MERIT's native EPSG:4326 three-arc-second affine transform with no resampling.
+The export contains `dir`, upstream area (`upa`) and upstream pixel count (`upg`).
+For every outlet, the traced pixel count is compared with `upg`; a relative
+difference above 1% marks the topology inconsistent and excludes the watershed.
+
+An August 2026 audit found that the earlier nominal 90 m export had resampled
+the categorical direction grid. Although all direction values remained valid,
+several watershed polygons were far smaller than MERIT's outlet upstream area.
+The earlier Lune/Ribble polygon features and their apparent 108-site readiness
+result are therefore superseded and prohibited from modelling. Both development
+areas must be rebuilt on the native grid and pass pixel-count concordance before
+their readiness result is accepted.
+
+The corrected native-grid pilot traced all nine active sites with delineated-to-
+MERIT upstream-pixel ratios from 0.9979 to 1.0000. Six traces reached the 20 km
+buffer boundary and are therefore correctly excluded; the three non-boundary
+traces had exact pixel-count agreement. This live check validates the topology
+correction while showing why boundary and concordance checks are both required.
