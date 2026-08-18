@@ -40,6 +40,7 @@ earth-risk sentinel-summary
 earth-risk sentinel-seasonal
 earth-risk build-grid
 earth-risk sentinel-grid-features
+earth-risk build-ecological-outcomes
 pytest
 ```
 
@@ -48,6 +49,8 @@ See [docs/setup.md](docs/setup.md) for cloud authentication and
 Earth-observation method is documented in
 [docs/satellite-baseline.md](docs/satellite-baseline.md), and the model-ready
 table contract is described in [docs/feature-table.md](docs/feature-table.md).
+The independent regulatory outcome assessment and its modelling constraints are
+documented in [docs/outcomes.md](docs/outcomes.md).
 
 ## Project principles
 

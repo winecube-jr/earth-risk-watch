@@ -17,6 +17,7 @@ from earth_risk_watch.extract.ea_catchments import (
     save_pilot_geometry,
 )
 from earth_risk_watch.grid import build_clipped_grid
+from earth_risk_watch.outcomes import build_ecological_outcomes
 from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.satellite import load_sentinel_job
 
@@ -117,6 +118,16 @@ def sentinel_grid_features(
 ) -> None:
     """Build the model-ready seasonal Sentinel feature table."""
     target = run_grid_features(grid, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-ecological-outcomes")
+def build_outcomes(
+    source: Path = Path("data/raw/ea-catchments/pilot-classifications.csv"),
+    output: Path = Path("data/features/outcomes/pilot-ecological.parquet"),
+) -> None:
+    """Normalize independent EA ecological-status outcomes."""
+    target = build_ecological_outcomes(source, output)
     typer.echo(f"Created {target}")
 
 
