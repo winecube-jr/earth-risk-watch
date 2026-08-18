@@ -48,6 +48,7 @@ earth-risk extract-lidar-terrain
 earth-risk build-terrain-features
 earth-risk build-risk-screen
 earth-risk publish-risk-map
+earth-risk build-evidence-pack
 pytest
 ```
 
@@ -66,6 +67,8 @@ The bounded Environment Agency LiDAR method is documented in
 [docs/terrain.md](docs/terrain.md).
 The explainable, non-predictive prioritisation layer is documented in
 [docs/risk-screen.md](docs/risk-screen.md).
+The independent diagnostic and investigation-shortlist method is documented in
+[docs/evidence-pack.md](docs/evidence-pack.md).
 
 ## Project principles
 

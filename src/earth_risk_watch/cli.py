@@ -12,6 +12,7 @@ from earth_risk_watch.cloud_run import (
     run_seasonal_summary,
 )
 from earth_risk_watch.demo import build_demo_manifest
+from earth_risk_watch.evidence import save_evidence_pack
 from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
     save_pilot_geometry,
@@ -215,6 +216,17 @@ def publish_risk_map(
 ) -> None:
     """Publish the pilot pressure screen as an interactive static map."""
     target = build_risk_map(screen, sampling_points, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-evidence-pack")
+def build_evidence_pack_command(
+    screen: Path = Path("data/products/risk/pilot-screen.geojson"),
+    monitoring: Path = Path("data/features/monitoring/pilot-seasonal.parquet"),
+    output: Path = Path("data/products/evidence"),
+) -> None:
+    """Build the pilot diagnostic report and investigation shortlist."""
+    target = save_evidence_pack(screen, monitoring, output)
     typer.echo(f"Created {target}")
 
 
