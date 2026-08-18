@@ -38,6 +38,19 @@ provenance.
 Colab runtimes are ephemeral. Download required products before disconnecting.
 Authentication tokens and raw data must never be copied into the repository.
 
+For development-scale upstream features, open
+`notebooks/03_upstream_development_colab.ipynb`. After one interactive Earth
+Engine authentication, it runs `earth-risk run-upstream-area` for Lune and
+Ribble. Each configured-area run downloads its official boundary, sampling
+points and 2024 observations; builds buffered MERIT routing, WorldCover and
+ERA5-Land rasters; delineates complete site watersheds; attaches national 2024
+EDM activity; and writes a readiness summary. The final cell downloads compact
+features, summaries and provenance as a ZIP before the ephemeral runtime closes.
+
+Wyre and Thames are intentionally absent from this notebook. Their evaluations
+have already been consumed, so they may be processed only for engineering
+diagnostics and must not influence feature selection or model tuning.
+
 ## Unattended Earth Engine
 
 This remains deliberately disabled. A future unattended workflow should use

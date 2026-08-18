@@ -39,6 +39,7 @@ from earth_risk_watch.upstream_features import (
     save_site_upstream_monitoring_table,
     save_upstream_feature_table,
 )
+from earth_risk_watch.upstream_pipeline import run_upstream_area_pipeline
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
 from earth_risk_watch.wastewater import extract_edm_2024, save_upstream_edm_features
 from earth_risk_watch.watershed import (
@@ -320,6 +321,17 @@ def build_site_upstream_monitoring_command(
 ) -> None:
     """Attach complete-watershed predictors to seasonal site outcomes."""
     target = save_site_upstream_monitoring_table(observations, satellite, upstream, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("run-upstream-area")
+def run_upstream_area_command(
+    area_id: str,
+    root: Path = Path("data"),
+    buffer_metres: int = typer.Option(20_000, min=0),
+) -> None:
+    """Run all upstream feature stages for one configured study area."""
+    target = run_upstream_area_pipeline(area_id, root, buffer_metres=buffer_metres)
     typer.echo(f"Created {target}")
 
 

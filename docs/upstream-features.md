@@ -127,6 +127,13 @@ coverage and the composite key has no duplicates. Six independent sites remain
 far below the 30-group readiness threshold, so the automated readiness result is
 false and no upstream predictive model is fitted at this stage.
 
+The configured-area orchestration command, `earth-risk run-upstream-area
+AREA_ID`, now reproduces all upstream stages with deterministic paths and emits a
+JSON summary containing the study-area role, active sites, complete and truncated
+watersheds, monitoring rows and readiness result. The companion Colab notebook
+runs this pipeline for the Lune and Ribble development areas so Earth Engine and
+data-extraction workloads remain off the local computer.
+
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,
 sub-basin and total upstream area, plus upstream climate, land-cover, soil,
