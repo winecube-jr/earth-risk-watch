@@ -6,7 +6,7 @@ from pathlib import Path
 import typer
 
 from earth_risk_watch.catalogue import load_catalogue
-from earth_risk_watch.cloud_run import run_pilot_summary
+from earth_risk_watch.cloud_run import run_pilot_summary, run_seasonal_summary
 from earth_risk_watch.demo import build_demo_manifest
 from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
@@ -81,6 +81,16 @@ def sentinel_summary(
 ) -> None:
     """Run the controlled annual Sentinel pilot summary in Earth Engine."""
     target = run_pilot_summary(geometry, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("sentinel-seasonal")
+def sentinel_seasonal(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/products/sentinel/pilot-seasonal.json"),
+) -> None:
+    """Run controlled seasonal Sentinel summaries in Earth Engine."""
+    target = run_seasonal_summary(geometry, output)
     typer.echo(f"Created {target}")
 
 

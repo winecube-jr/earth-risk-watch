@@ -79,3 +79,7 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 python_version = "3.12"
 strict = true
 packages = ["earth_risk_watch"]
+
+[[tool.mypy.overrides]]
+module = ["ee", "ee.*"]
+ignore_missing_imports = true

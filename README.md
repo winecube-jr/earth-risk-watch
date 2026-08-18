@@ -37,11 +37,14 @@ earth-risk demo --output data/products/demo
 earth-risk sentinel-plan
 earth-risk extract-ea-geometry
 earth-risk sentinel-summary
+earth-risk sentinel-seasonal
 pytest
 ```
 
 See [docs/setup.md](docs/setup.md) for cloud authentication and
-[docs/architecture.md](docs/architecture.md) for the system design.
+[docs/architecture.md](docs/architecture.md) for the system design. The current
+Earth-observation method is documented in
+[docs/satellite-baseline.md](docs/satellite-baseline.md).
 
 ## Project principles
 

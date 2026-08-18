@@ -12,3 +12,8 @@ sentinel_2:
   notes:
     - SCL classes 3, 8, 9, 10, and 11 are excluded.
     - The annual median is a baseline and will be complemented by seasonal features.
+  seasons:
+    winter: ["2024-01-01", "2024-03-01"]
+    spring: ["2024-03-01", "2024-06-01"]
+    summer: ["2024-06-01", "2024-09-01"]
+    autumn: ["2024-09-01", "2024-12-01"]

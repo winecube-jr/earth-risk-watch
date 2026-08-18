@@ -44,6 +44,21 @@ class SentinelJob:
         return values
 
 
+@dataclass(frozen=True)
+class Season:
+    """Named, non-empty half-open date interval."""
+
+    name: str
+    start_date: date
+    end_date: date
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("season name must not be empty")
+        if self.start_date >= self.end_date:
+            raise ValueError("season start_date must be before end_date")
+
+
 def load_sentinel_job(path: Path | None = None) -> SentinelJob:
     """Load the baseline Sentinel request from project configuration."""
     config_path = path or repository_root() / "config" / "sentinel.yaml"
@@ -57,6 +72,17 @@ def load_sentinel_job(path: Path | None = None) -> SentinelJob:
         output_scale_metres=raw["output_scale_metres"],
         composite=raw["composite"],
     )
+
+
+def load_seasons(path: Path | None = None) -> list[Season]:
+    """Load ordered seasonal windows from the Sentinel configuration."""
+    config_path = path or repository_root() / "config" / "sentinel.yaml"
+    with config_path.open(encoding="utf-8") as stream:
+        raw = yaml.safe_load(stream)["sentinel_2"]["seasons"]
+    return [
+        Season(name, date.fromisoformat(window[0]), date.fromisoformat(window[1]))
+        for name, window in raw.items()
+    ]
 
 
 def mask_s2_scl(image: Any) -> Any:
