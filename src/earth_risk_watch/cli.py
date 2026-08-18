@@ -36,12 +36,14 @@ from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
+from earth_risk_watch.upstream_external import save_upstream_external_holdout_evaluation
 from earth_risk_watch.upstream_features import (
     save_site_upstream_monitoring_table,
     save_upstream_feature_table,
 )
 from earth_risk_watch.upstream_model import save_upstream_development_evaluation
 from earth_risk_watch.upstream_pipeline import run_upstream_area_pipeline
+from earth_risk_watch.upstream_robust import save_robust_upstream_evaluation
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
 from earth_risk_watch.wastewater import extract_edm_2024, save_upstream_edm_features
 from earth_risk_watch.watershed import (
@@ -363,6 +365,56 @@ def evaluate_upstream_development_command(
     """Run preregistered catchment-transfer evaluation and freeze final models."""
     target = save_upstream_development_evaluation(
         table, predictions, models, bootstrap_draws=bootstrap_draws, seed=seed
+    )
+    typer.echo(f"Created {target}")
+
+
+@app.command("evaluate-robust-upstream-development")
+def evaluate_robust_upstream_development_command(
+    table: Path = Path("data/features/development/upstream-development.parquet"),
+    ridge_report: Path = Path(
+        "data/products/development/upstream-transfer-predictions.parquet.report.json"
+    ),
+    predictions: Path = Path(
+        "data/products/development/upstream-robust-transfer-predictions.parquet"
+    ),
+    models: Path = Path("data/models/upstream-robust-development-models.joblib"),
+    bootstrap_draws: int = typer.Option(1_000, min=100),
+    seed: int = 42,
+) -> None:
+    """Run the preregistered robust comparison and applicability diagnostics."""
+    target = save_robust_upstream_evaluation(
+        table,
+        ridge_report,
+        predictions,
+        models,
+        bootstrap_draws=bootstrap_draws,
+        seed=seed,
+    )
+    typer.echo(f"Created {target}")
+
+
+@app.command("evaluate-upstream-external-holdout")
+def evaluate_upstream_external_holdout_command(
+    area_id: str,
+    holdout: Path,
+    development: Path = Path("data/features/development/upstream-development.parquet"),
+    models: Path = Path("data/models/upstream-robust-development-models.joblib"),
+    selection: Path = Path("config/upstream_model_selection.yaml"),
+    output: Path = Path("data/products/validation/upstream-external-predictions.parquet"),
+    bootstrap_draws: int = typer.Option(1_000, min=100),
+    seed: int = 42,
+) -> None:
+    """Evaluate frozen eligible models once on the named external holdout."""
+    target = save_upstream_external_holdout_evaluation(
+        holdout,
+        development,
+        models,
+        selection,
+        output,
+        area_id=area_id,
+        bootstrap_draws=bootstrap_draws,
+        seed=seed,
     )
     typer.echo(f"Created {target}")
 

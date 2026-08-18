@@ -1,0 +1,29 @@
+version: 1
+status: frozen-before-external-holdout
+frozen_at: "2026-08-18"
+development_catchments:
+  - lune-management
+  - ribble-management
+external_holdout:
+  area_id: derwent-derbyshire
+  role: untouched-external-validation-v2
+selected_models:
+  "0076": random_forest
+  "0117": random_forest
+  "0180": random_forest
+excluded_determinands:
+  "0061": no candidate beat the training median in both transfer directions
+  "0111": no candidate beat the training median in both transfer directions
+selection_rule: >-
+  Candidate must beat its training-catchment median in both transfer directions;
+  eligible candidate with lower mean transfer MAE wins, with Ridge winning ties.
+artifacts:
+  ridge_report_path: data/products/development/upstream-transfer-predictions.parquet.report.json
+  ridge_report_sha256: a00d6c1c371b743c1449c8b47c64b0dc52643d4fec0b4145bdda595a304376ad
+  robust_report_path: data/products/development/upstream-robust-transfer-predictions.parquet.report.json
+  robust_report_sha256: 87015955f314c6ece657391537dc8a11646ced1d757e30da21265896f1579dc8
+  robust_model_path: data/models/upstream-robust-development-models.joblib
+  robust_model_sha256: 2d80fbcaabf72a973c7c998f5bf68da7305204d96bb493c17aaa70e7e61cfb61
+warning: >-
+  Selection uses development evidence only. Derwent results must not alter this
+  manifest or the model artifacts.
