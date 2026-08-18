@@ -10,6 +10,7 @@ on:
         type: choice
         options:
           - lune-management
+          - ribble-management
           - wyre-management
           - lune-rawthey-greta
 

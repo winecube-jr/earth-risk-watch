@@ -14,6 +14,9 @@ def test_load_study_areas() -> None:
     validation_area = registry.by_id("wyre-management")
     assert validation_area.entity_id == "3119"
     assert validation_area.role == "external-validation-expansion"
+    development_area = registry.by_id("ribble-management")
+    assert development_area.entity_id == "3070"
+    assert development_area.role == "development-expansion"
 
 
 def test_study_area_ids_must_be_unique(tmp_path: Path) -> None:

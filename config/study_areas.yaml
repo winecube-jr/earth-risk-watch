@@ -15,3 +15,8 @@ areas:
     entity_type: ManagementCatchment
     entity_id: "3119"
     role: external-validation-expansion
+  - id: ribble-management
+    name: Ribble Management Catchment
+    entity_type: ManagementCatchment
+    entity_id: "3070"
+    role: development-expansion

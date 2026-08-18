@@ -1,5 +1,6 @@
 development_areas:
   - lune-management
+  - ribble-management
 external_validation_areas:
   - wyre-management
 minimum_development_monitored_cells: 30

@@ -5,6 +5,8 @@ The registry includes the original Lune–Rawthey-to-Greta operational catchment
 the complete Lune management catchment, and the neighbouring Wyre management
 catchment. Wyre is designated as an external-validation expansion: its data must
 remain a distinct geographic group when models or thresholds are assessed.
+Ribble is designated as a development expansion, adding upland, agricultural,
+urban and estuarine contexts while preserving Wyre as the untouched holdout.
 
 `earth-risk extract-study-area AREA_ID` downloads the official boundary and
 classifications with checksums. Every downstream command already accepts custom
