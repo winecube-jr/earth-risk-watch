@@ -9,8 +9,22 @@ import joblib
 import pandas as pd
 import yaml
 
+from earth_risk_watch.development import PREREGISTERED_PREDICTORS, derive_upstream_predictors
 from earth_risk_watch.upstream_model import MODEL_FEATURES, _inverse, _metrics, _site_bootstrap
 from earth_risk_watch.upstream_robust import _attach_applicability
+
+
+def _outside_range_fractions(rows: pd.DataFrame, support: dict[str, Any]) -> dict[str, float]:
+    """Report which predictors drive an external applicability warning."""
+    return {
+        feature: float(
+            (
+                (rows[feature] < support["predictors"][feature]["minimum"])
+                | (rows[feature] > support["predictors"][feature]["maximum"])
+            ).mean()
+        )
+        for feature in PREREGISTERED_PREDICTORS
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -30,6 +44,7 @@ def evaluate_upstream_external_holdout(
     """Evaluate only preregistered eligible outcomes without refitting."""
     if area_id != selection["external_holdout"]["area_id"]:
         raise ValueError("Area does not match the frozen external holdout")
+    holdout = derive_upstream_predictors(holdout)
     required = set(MODEL_FEATURES) | {
         "point_notation",
         "season",
@@ -104,6 +119,9 @@ def evaluate_upstream_external_holdout(
             },
             "outside_applicability_rows": int(
                 (result["applicability_status"] == "outside_applicability_domain").sum()
+            ),
+            "predictor_outside_training_range_fraction": _outside_range_fractions(
+                assessed, bundle["applicability_support"]
             ),
         }
     return pd.concat(prediction_frames, ignore_index=True), report

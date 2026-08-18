@@ -23,7 +23,13 @@ upstream_v2_holdout:
     minimum_complete_watershed_sites: 10
     minimum_sites_per_modelled_determinand: 10
   outcome_values_examined_before_selection: false
-  status: frozen-unprocessed
+  status: evaluated-once
+  evaluated_on: "2026-08-18"
+  evaluated_model_selection: config/upstream_model_selection.yaml
+  eligible_determinand_codes: ["0076", "0117", "0180"]
+  complete_watershed_sites: 92
+  topology_inconsistent_watersheds: 0
+  truncated_watersheds: 0
 minimum_development_monitored_cells: 30
 minimum_external_monitored_cells: 10
 minimum_external_catchments: 1

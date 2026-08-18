@@ -24,6 +24,36 @@ PREREGISTERED_PREDICTORS = (
     "upstream_spill_density_per_100_km2",
     "upstream_spill_hours_per_100_km2",
 )
+DERIVED_PREDICTORS = (
+    "log_upstream_area_km2",
+    "upstream_overflow_density_per_100_km2",
+    "upstream_spill_density_per_100_km2",
+    "upstream_spill_hours_per_100_km2",
+)
+
+
+def derive_upstream_predictors(source: pd.DataFrame) -> pd.DataFrame:
+    """Derive the identical area-normalized predictors for any partition."""
+    frame = source.copy()
+    required = {
+        "outlet_upstream_area_km2",
+        "upstream_overflow_count",
+        "upstream_spill_count_2024",
+        "upstream_spill_duration_hours_2024",
+    }
+    missing = required.difference(frame.columns)
+    if missing:
+        raise ValueError(f"Cannot derive upstream predictors; missing columns: {sorted(missing)}")
+    area = frame["outlet_upstream_area_km2"]
+    if area.isna().any() or (area <= 0).any():
+        raise ValueError("Cannot derive upstream predictors from invalid upstream areas")
+    frame["log_upstream_area_km2"] = np.log1p(area)
+    frame["upstream_overflow_density_per_100_km2"] = frame["upstream_overflow_count"] / area * 100
+    frame["upstream_spill_density_per_100_km2"] = frame["upstream_spill_count_2024"] / area * 100
+    frame["upstream_spill_hours_per_100_km2"] = (
+        frame["upstream_spill_duration_hours_2024"] / area * 100
+    )
+    return frame
 
 
 def build_upstream_development_table(area_tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -66,16 +96,7 @@ def build_upstream_development_table(area_tables: dict[str, pd.DataFrame]) -> pd
         area = frame["outlet_upstream_area_km2"]
         if area.isna().any() or (area <= 0).any():
             raise ValueError(f"{area_id} contains invalid upstream areas")
-        frame["log_upstream_area_km2"] = np.log1p(area)
-        frame["upstream_overflow_density_per_100_km2"] = (
-            frame["upstream_overflow_count"] / area * 100
-        )
-        frame["upstream_spill_density_per_100_km2"] = (
-            frame["upstream_spill_count_2024"] / area * 100
-        )
-        frame["upstream_spill_hours_per_100_km2"] = (
-            frame["upstream_spill_duration_hours_2024"] / area * 100
-        )
+        frame = derive_upstream_predictors(frame)
         missing_predictors = set(PREREGISTERED_PREDICTORS).difference(frame.columns)
         if missing_predictors:
             raise ValueError(f"{area_id} is missing predictors: {sorted(missing_predictors)}")

@@ -1,5 +1,13 @@
 # Frozen upstream-model holdout
 
+## Evaluation status
+
+Derwent passed its eligibility gate with 92 complete watersheds, no truncation
+and no topology inconsistency. The frozen models were evaluated once on 18
+August 2026. Results are reported in
+[`upstream-external-results.md`](upstream-external-results.md). Derwent is now
+consumed and cannot be reused as an untouched holdout for later model changes.
+
 ## Selection
 
 Derwent Derbyshire Management Catchment (`3026`) is frozen as the upstream-v2

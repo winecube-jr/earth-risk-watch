@@ -26,6 +26,7 @@ def test_external_evaluation_uses_only_frozen_selection() -> None:
     )
     assert set(predictions["determinand_code"]) == {"0117"}
     assert report["evaluation"] == "one-shot untouched external holdout"
+    assert "predictor_outside_training_range_fraction" in report["determinand_results"]["0117"]
 
 
 def test_external_evaluation_rejects_wrong_area() -> None:

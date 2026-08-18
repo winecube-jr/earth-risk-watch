@@ -24,6 +24,14 @@ def model_rows(area: str, sites: int = 6) -> pd.DataFrame:
                     for offset, feature in enumerate(PREREGISTERED_PREDICTORS)
                 }
             )
+            row.update(
+                {
+                    "outlet_upstream_area_km2": 50.0,
+                    "upstream_overflow_count": 2,
+                    "upstream_spill_count_2024": 10.0,
+                    "upstream_spill_duration_hours_2024": 30.0,
+                }
+            )
             rows.append(row)
     return pd.DataFrame(rows)
 

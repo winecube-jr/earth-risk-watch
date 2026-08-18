@@ -4,6 +4,7 @@ import pytest
 from earth_risk_watch.development import (
     PREREGISTERED_PREDICTORS,
     build_upstream_development_table,
+    derive_upstream_predictors,
     development_diagnostics,
 )
 
@@ -69,3 +70,9 @@ def test_development_table_rejects_schema_mismatch() -> None:
     mismatch = table("two").assign(extra=1)
     with pytest.raises(ValueError, match="schema mismatch"):
         build_upstream_development_table({"lune": table("one"), "ribble": mismatch})
+
+
+def test_derive_upstream_predictors_recreates_frozen_features() -> None:
+    result = derive_upstream_predictors(table("one"))
+    assert result.loc[0, "upstream_overflow_density_per_100_km2"] == pytest.approx(4)
+    assert result.loc[0, "upstream_spill_hours_per_100_km2"] == pytest.approx(60)
