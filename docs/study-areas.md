@@ -16,4 +16,5 @@ temporal overlap, and independence must be assessed before changing modelling
 readiness. In particular, tuning on Lune and evaluating once on Wyre is more
 credible than randomly splitting neighbouring cells from one catchment, although
 it still represents only one external geography and cannot establish national
-generalisability.
+generalisability. The measured baseline and holdout rules are recorded in
+`docs/expansion-readiness.md` and `config/validation.yaml`.
