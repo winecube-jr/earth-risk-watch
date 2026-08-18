@@ -42,8 +42,8 @@ sources:
   - id: ea-water-quality
     title: Water Quality Explorer
     provider: Environment Agency
-    access: download_portal
-    endpoint: https://environment.data.gov.uk/water-quality/view/landing
+    access: http_api
+    endpoint: https://environment.data.gov.uk/water-quality/data/sampling-point
     geography: England
     licence: Open Government Licence 3.0
     themes: [water]

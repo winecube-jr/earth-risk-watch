@@ -41,6 +41,8 @@ earth-risk sentinel-seasonal
 earth-risk build-grid
 earth-risk sentinel-grid-features
 earth-risk build-ecological-outcomes
+earth-risk extract-water-sampling-points
+earth-risk extract-water-observations
 pytest
 ```
 
@@ -51,6 +53,8 @@ Earth-observation method is documented in
 table contract is described in [docs/feature-table.md](docs/feature-table.md).
 The independent regulatory outcome assessment and its modelling constraints are
 documented in [docs/outcomes.md](docs/outcomes.md).
+The live regulatory monitoring extraction and censored-result treatment are
+documented in [docs/water-quality.md](docs/water-quality.md).
 
 ## Project principles
 

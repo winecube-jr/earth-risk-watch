@@ -16,6 +16,7 @@ from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
     save_pilot_geometry,
 )
+from earth_risk_watch.extract.water_quality import save_pilot_observations, save_sampling_points
 from earth_risk_watch.grid import build_clipped_grid
 from earth_risk_watch.outcomes import build_ecological_outcomes
 from earth_risk_watch.readiness import checks_as_dicts
@@ -128,6 +129,26 @@ def build_outcomes(
 ) -> None:
     """Normalize independent EA ecological-status outcomes."""
     target = build_ecological_outcomes(source, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-water-sampling-points")
+def extract_water_sampling_points(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
+) -> None:
+    """Download Water Quality Explorer sampling points inside the pilot."""
+    target = save_sampling_points(geometry, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-water-observations")
+def extract_water_observations(
+    sampling_points: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
+    output: Path = Path("data/features/water-quality/pilot-2024.parquet"),
+) -> None:
+    """Download 2024 core observations from open river sites in the pilot."""
+    target = save_pilot_observations(sampling_points, output)
     typer.echo(f"Created {target}")
 
 
