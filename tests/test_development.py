@@ -15,6 +15,7 @@ def table(site: str) -> pd.DataFrame:
         "determinand_code": "0117",
         "target_mean": 2.0,
         "outlet_upstream_area_km2": 50.0,
+        "delineated_to_upstream_pixel_ratio": 1.0,
         "topology_consistent": True,
         "touches_raster_boundary": False,
         "tree_fraction_mean": 0.2,
@@ -40,7 +41,10 @@ def test_build_upstream_development_table_derives_density_features() -> None:
     assert result.loc[0, "upstream_overflow_density_per_100_km2"] == pytest.approx(4)
     assert result.loc[0, "upstream_spill_density_per_100_km2"] == pytest.approx(20)
     assert set(PREREGISTERED_PREDICTORS).issubset(result.columns)
-    assert development_diagnostics(result)["sites"] == 2
+    diagnostics = development_diagnostics(result)
+    assert diagnostics["sites"] == 2
+    assert diagnostics["duplicate_outcome_keys"] == 0
+    assert diagnostics["target_support_by_determinand"]["0117"]["sites"] == 2
 
 
 def test_development_table_rejects_site_overlap() -> None:

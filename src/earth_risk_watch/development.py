@@ -105,8 +105,25 @@ def development_diagnostics(frame: pd.DataFrame) -> dict[str, object]:
         "predictor_null_counts": {
             column: int(frame[column].isna().sum()) for column in PREREGISTERED_PREDICTORS
         },
+        "target_support_by_determinand": {
+            str(code): {
+                "rows": len(group),
+                "sites": int(group["point_notation"].nunique()),
+                "minimum": float(group["target_mean"].min()),
+                "median": float(group["target_mean"].median()),
+                "maximum": float(group["target_mean"].max()),
+                "skew": float(group["target_mean"].skew()),
+                "zero_rows": int((group["target_mean"] == 0).sum()),
+            }
+            for code, group in frame.groupby("determinand_code")
+        },
         "topology_consistent": bool(frame["topology_consistent"].all()),
+        "delineated_to_upstream_pixel_ratio": {
+            "minimum": float(frame["delineated_to_upstream_pixel_ratio"].min()),
+            "maximum": float(frame["delineated_to_upstream_pixel_ratio"].max()),
+        },
         "boundary_truncated_rows": int(frame["touches_raster_boundary"].sum()),
+        "duplicate_outcome_keys": int(frame.duplicated(list(KEY_COLUMNS)).sum()),
     }
 
 

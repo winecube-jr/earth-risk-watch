@@ -1,5 +1,8 @@
 # Upstream-pressure feature design
 
+The corrected Lune–Ribble development build and its geographic-transfer results
+are documented in [`upstream-development-results.md`](upstream-development-results.md).
+
 The first hydrology layer uses MERIT Hydro in Earth Engine to summarize upstream
 drainage area, height above drainage, river width and permanent-water fraction
 for every 2 km cell at a common 90 m processing scale. These variables provide

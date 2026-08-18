@@ -7,6 +7,10 @@ examined. The earlier resampled-routing features are invalid and prohibited from
 model fitting. No external validation may begin until a new untouched catchment
 is named and frozen in configuration.
 
+The design was executed on 18 August 2026. Results are recorded in
+[`upstream-development-results.md`](upstream-development-results.md); Derwent
+Derbyshire remains the untouched external holdout.
+
 ## Development population
 
 Development data comprise monitoring sites with complete, topology-consistent

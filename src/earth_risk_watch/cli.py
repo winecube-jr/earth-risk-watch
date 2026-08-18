@@ -40,6 +40,7 @@ from earth_risk_watch.upstream_features import (
     save_site_upstream_monitoring_table,
     save_upstream_feature_table,
 )
+from earth_risk_watch.upstream_model import save_upstream_development_evaluation
 from earth_risk_watch.upstream_pipeline import run_upstream_area_pipeline
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
 from earth_risk_watch.wastewater import extract_edm_2024, save_upstream_edm_features
@@ -339,12 +340,30 @@ def run_upstream_area_command(
 
 @app.command("build-upstream-development-table")
 def build_upstream_development_table_command(
-    area: Annotated[list[str], typer.Option(help="Repeat AREA_ID=PATH for development")],
+    area: Annotated[
+        list[str],
+        typer.Option(help="Repeat AREA_ID=PATH using site-upstream-monitoring parquet files"),
+    ],
     output: Path = Path("data/features/development/upstream-development.parquet"),
     diagnostics: Path = Path("data/products/development/upstream-diagnostics.json"),
 ) -> None:
     """Combine topology-validated development catchments with fixed predictors."""
     target = save_upstream_development_table(parse_partition_paths(area), output, diagnostics)
+    typer.echo(f"Created {target}")
+
+
+@app.command("evaluate-upstream-development")
+def evaluate_upstream_development_command(
+    table: Path = Path("data/features/development/upstream-development.parquet"),
+    predictions: Path = Path("data/products/development/upstream-transfer-predictions.parquet"),
+    models: Path = Path("data/models/upstream-development-models.joblib"),
+    bootstrap_draws: int = typer.Option(1_000, min=100),
+    seed: int = 42,
+) -> None:
+    """Run preregistered catchment-transfer evaluation and freeze final models."""
+    target = save_upstream_development_evaluation(
+        table, predictions, models, bootstrap_draws=bootstrap_draws, seed=seed
+    )
     typer.echo(f"Created {target}")
 
 
