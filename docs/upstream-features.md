@@ -99,6 +99,34 @@ watersheds contain five and nine outlets, with 206 and 384 reported spills and
 approximately 1,909 and 2,434 total spill hours respectively. Because these
 watersheds are nested, their totals are cumulative rather than independent.
 
+## Consolidated site feature contract
+
+The model-facing upstream table has exactly one row per monitoring site with a
+complete watershed. It combines watershed diagnostics, scale-safe land-cover
+means and standard deviations, raster coverage fractions, rainfall and wetness
+context, and storm-overflow exposure. Raster sums are deliberately excluded:
+they depend on processing resolution and pixel count and could be mistaken for
+physical loads. Site membership must match exactly across every input table, and
+duplicate or null site identifiers fail the build.
+Mean EDM coverage remains null when no monitored overflow exists; an explicit
+coverage-available flag distinguishes this structurally inapplicable value from
+missing source data.
+
+A separate site × season × determinand table aggregates monitoring outcomes only
+for those complete watersheds and attaches the consolidated predictors. This is
+kept separate from the established cell-level feature table, because joining
+site-specific contributing areas after cell aggregation would create ambiguous
+many-to-many relationships. The new table is exploratory and cannot be used to
+revise or re-evaluate the frozen baseline on Wyre or Thames; a new untouched
+catchment is required for external evaluation of any redesigned model.
+
+The pilot consolidation produced six site rows with 63 upstream fields and 98
+site × season × determinand outcome rows covering pH, water temperature,
+ammoniacal nitrogen, nitrate and orthophosphate. All raster features have full
+coverage and the composite key has no duplicates. Six independent sites remain
+far below the 30-group readiness threshold, so the automated readiness result is
+false and no upstream predictive model is fitted at this stage.
+
 As an intermediate stage, monitoring sites are assigned to the smallest
 intersecting HydroATLAS level-12 basin. The staged table retains topology,
 sub-basin and total upstream area, plus upstream climate, land-cover, soil,

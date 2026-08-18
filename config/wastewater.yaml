@@ -9,6 +9,7 @@ event_duration_monitoring:
     - upstream_spill_count_2024
     - upstream_spill_duration_hours_2024
     - upstream_mean_edm_coverage_percent_2024
+    - upstream_edm_coverage_available_2024
     - upstream_low_coverage_overflow_count_2024
   licence: Open Government Licence 3.0
   interpretation: storm-overflow activity exposure, not treatment or pollutant load

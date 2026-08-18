@@ -35,6 +35,10 @@ from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
+from earth_risk_watch.upstream_features import (
+    save_site_upstream_monitoring_table,
+    save_upstream_feature_table,
+)
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
 from earth_risk_watch.wastewater import extract_edm_2024, save_upstream_edm_features
 from earth_risk_watch.watershed import (
@@ -291,6 +295,31 @@ def build_upstream_edm_features_command(
 ) -> None:
     """Aggregate 2024 storm-overflow activity inside site watersheds."""
     target = save_upstream_edm_features(watersheds, edm, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-upstream-feature-table")
+def build_upstream_feature_table_command(
+    watersheds: Path,
+    land_cover: Path,
+    climate: Path,
+    storm_overflows: Path,
+    output: Path = Path("data/features/upstream/site-features.parquet"),
+) -> None:
+    """Combine complete-watershed pressure layers at one row per site."""
+    target = save_upstream_feature_table(watersheds, land_cover, climate, storm_overflows, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-site-upstream-monitoring")
+def build_site_upstream_monitoring_command(
+    upstream: Path,
+    observations: Path = Path("data/features/water-quality/pilot-2024.parquet"),
+    satellite: Path = Path("data/features/sentinel/pilot-seasonal.parquet"),
+    output: Path = Path("data/features/monitoring/pilot-site-upstream.parquet"),
+) -> None:
+    """Attach complete-watershed predictors to seasonal site outcomes."""
+    target = save_site_upstream_monitoring_table(observations, satellite, upstream, output)
     typer.echo(f"Created {target}")
 
 

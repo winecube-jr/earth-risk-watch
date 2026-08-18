@@ -172,6 +172,7 @@ def build_upstream_edm_features(watersheds_path: Path, edm_path: Path) -> pd.Dat
                 )
                 if len(monitored)
                 else float("nan"),
+                "upstream_edm_coverage_available_2024": bool(len(monitored)),
                 "upstream_low_coverage_overflow_count_2024": int(
                     (monitored["edm_coverage_percent_2024"] < 90).sum()
                 ),

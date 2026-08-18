@@ -75,3 +75,4 @@ def test_build_upstream_edm_features_includes_zero_exposure(tmp_path: Path) -> N
     assert result.loc["site-1", "upstream_low_coverage_overflow_count_2024"] == 1
     assert result.loc["site-2", "upstream_overflow_count"] == 0
     assert result.loc["site-2", "upstream_spill_count_2024"] == 0
+    assert not result.loc["site-2", "upstream_edm_coverage_available_2024"]
