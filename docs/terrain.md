@@ -15,11 +15,12 @@ The 2022 composite combines surveys captured between 2000 and 2022, choosing the
 newest suitable coverage. It is therefore a largely static terrain covariate,
 not a contemporaneous 2024 observation. Resampling to 10 m is appropriate for
 catchment-scale screening but not asset-level drainage or engineering decisions.
-The modelling baseline uses `COPERNICUS/DEM/GLO30` at a common 30 m processing
-scale for complete, comparable terrain coverage across development and external
-validation catchments. Mean, standard deviation, minimum and maximum elevation,
-plus mean and standard deviation of slope, are summarized to each 2 km cell in
-Earth Engine.
+The modelling baseline uses the `COPERNICUS/DEM/GLO30_2024_1` digital surface
+model at a common 30 m processing scale for complete, comparable terrain coverage
+across development and external validation catchments. The mosaic is assigned its
+native projection before slope is calculated, as required by the Earth Engine
+catalogue guidance. Mean, standard deviation, minimum and maximum surface height,
+plus mean and standard deviation of slope, are summarized to each 2 km cell.
 
 Environment Agency LiDAR remains a higher-resolution supplementary source. Its
 coverage is explicitly represented by `valid_pixel_count`; missing coverage is

@@ -27,3 +27,14 @@ The next build stage is to produce Sentinel and terrain features for both areas,
 train only on Lune, and evaluate once on Wyre. Predictive work remains subordinate
 to data leakage checks, per-determinand sample sizes, censored-result treatment,
 spatial dependence, and uncertainty reporting.
+
+## Terrain coverage finding
+
+The cross-catchment public-feature run
+[32140745977](https://github.com/winecube-jr/earth-risk-watch/actions/runs/32140745977)
+found EA LiDAR coverage in 117 of 379 Lune cells and all 138 Wyre cells. Because
+that missingness strongly identifies geography, LiDAR is supplementary rather
+than the primary terrain baseline. The current Copernicus GLO-30 2024_1 surface
+model was subsequently reduced in Earth Engine for all 517 cells with no missing
+metrics. This preserves a common terrain feature definition while retaining
+LiDAR coverage and higher-resolution summaries for explicit sensitivity work.

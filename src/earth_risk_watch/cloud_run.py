@@ -190,8 +190,11 @@ def run_dem_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no 
     ee.Initialize(project=settings.earthengine_project)
     grid_geojson: dict[str, Any] = json.loads(grid_path.read_text(encoding="utf-8"))
     grid = ee.FeatureCollection(grid_geojson)
+    collection = ee.ImageCollection("COPERNICUS/DEM/GLO30_2024_1").select("DEM")
     elevation = (
-        ee.ImageCollection("COPERNICUS/DEM/GLO30").select("DEM").mosaic().rename("elevation")
+        collection.mosaic()
+        .setDefaultProjection(collection.first().projection())
+        .rename("elevation")
     )
     image = elevation.addBands(ee.Terrain.slope(elevation).rename("slope"))
     reducer = (
@@ -213,7 +216,7 @@ def run_dem_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no 
     provenance = {
         "created_at": datetime.now(UTC).isoformat(),
         "earth_engine_project": settings.earthengine_project,
-        "source": "COPERNICUS/DEM/GLO30",
+        "source": "COPERNICUS/DEM/GLO30_2024_1",
         "processing_scale_metres": 30,
         "rows": len(frame),
         "cells": int(frame["cell_id"].nunique()),
