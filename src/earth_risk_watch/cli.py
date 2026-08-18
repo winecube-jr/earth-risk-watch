@@ -14,6 +14,7 @@ from earth_risk_watch.cloud_run import (
     run_seasonal_summary,
 )
 from earth_risk_watch.demo import build_demo_manifest
+from earth_risk_watch.diagnostics import save_evaluation_diagnostics
 from earth_risk_watch.evidence import save_evidence_pack
 from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
@@ -282,6 +283,19 @@ def evaluate_fixed_baseline_command(
     from earth_risk_watch.model import save_fixed_baseline_evaluation
 
     target = save_fixed_baseline_evaluation(table, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-evaluation-diagnostics")
+def build_evaluation_diagnostics_command(
+    predictions: Path,
+    partitions: Path,
+    output: Path = Path("data/products/model/evaluation-diagnostics.json"),
+    draws: int = typer.Option(1_000, min=100),
+    seed: int = 42,
+) -> None:
+    """Quantify external uncertainty by resampling whole monitored cells."""
+    target = save_evaluation_diagnostics(predictions, partitions, output, draws=draws, seed=seed)
     typer.echo(f"Created {target}")
 
 
