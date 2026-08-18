@@ -75,6 +75,9 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+"src/earth_risk_watch/publish.py" = ["E501"] # Embedded JavaScript readability.
+
 [tool.mypy]
 python_version = "3.12"
 strict = true

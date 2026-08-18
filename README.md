@@ -46,6 +46,8 @@ earth-risk extract-water-observations
 earth-risk build-monitoring-features
 earth-risk extract-lidar-terrain
 earth-risk build-terrain-features
+earth-risk build-risk-screen
+earth-risk publish-risk-map
 pytest
 ```
 
@@ -62,6 +64,8 @@ The spatial-temporal monitoring linkage is documented in
 [docs/monitoring-features.md](docs/monitoring-features.md).
 The bounded Environment Agency LiDAR method is documented in
 [docs/terrain.md](docs/terrain.md).
+The explainable, non-predictive prioritisation layer is documented in
+[docs/risk-screen.md](docs/risk-screen.md).
 
 ## Project principles
 

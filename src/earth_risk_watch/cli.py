@@ -20,7 +20,9 @@ from earth_risk_watch.extract.water_quality import save_pilot_observations, save
 from earth_risk_watch.grid import build_clipped_grid
 from earth_risk_watch.monitoring_features import save_monitoring_feature_table
 from earth_risk_watch.outcomes import build_ecological_outcomes
+from earth_risk_watch.publish import build_risk_map
 from earth_risk_watch.readiness import checks_as_dicts
+from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
 
@@ -188,6 +190,31 @@ def build_terrain_feature_command(
 ) -> None:
     """Build elevation, relief, and slope predictors for pilot grid cells."""
     target = save_terrain_features(dtm, grid, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-risk-screen")
+def build_risk_screen_command(
+    grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    satellite: Path = Path("data/features/sentinel/pilot-seasonal.parquet"),
+    terrain: Path = Path("data/features/terrain/pilot-2km.parquet"),
+    sampling_points: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
+    observations: Path = Path("data/features/water-quality/pilot-2024.parquet"),
+    output: Path = Path("data/products/risk/pilot-screen.geojson"),
+) -> None:
+    """Build an explainable relative pressure screen for the pilot grid."""
+    target = save_risk_screen(grid, satellite, terrain, sampling_points, observations, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("publish-risk-map")
+def publish_risk_map(
+    screen: Path = Path("data/products/risk/pilot-screen.geojson"),
+    sampling_points: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
+    output: Path = Path("data/products/risk/pilot-map.html"),
+) -> None:
+    """Publish the pilot pressure screen as an interactive static map."""
+    target = build_risk_map(screen, sampling_points, output)
     typer.echo(f"Created {target}")
 
 
