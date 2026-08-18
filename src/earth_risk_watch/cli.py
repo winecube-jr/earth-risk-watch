@@ -329,9 +329,10 @@ def run_upstream_area_command(
     area_id: str,
     root: Path = Path("data"),
     buffer_metres: int = typer.Option(20_000, min=0),
+    force: bool = False,
 ) -> None:
     """Run all upstream feature stages for one configured study area."""
-    target = run_upstream_area_pipeline(area_id, root, buffer_metres=buffer_metres)
+    target = run_upstream_area_pipeline(area_id, root, buffer_metres=buffer_metres, force=force)
     typer.echo(f"Created {target}")
 
 

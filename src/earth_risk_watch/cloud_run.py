@@ -496,7 +496,7 @@ def download_worldcover_pressure_grid(
     )
     classification = ee.ImageCollection("ESA/WorldCover/v200").first().select("Map")
     bodies = []
-    with open_data_client(timeout_seconds=180) as client:
+    with open_data_client(timeout_seconds=300) as client:
         for band_name, class_value in WORLDCOVER_CLASSES.items():
             fraction = (
                 classification.eq(class_value)

@@ -47,6 +47,11 @@ ERA5-Land rasters; delineates complete site watersheds; attaches national 2024
 EDM activity; and writes a readiness summary. The final cell downloads compact
 features, summaries and provenance as a ZIP before the ephemeral runtime closes.
 
+Configured-area runs are resumable. Existing routing, WorldCover and ERA5-Land
+rasters are reused by default after a transient failure; pass `--force` only for
+an intentional full rebuild. Bounded downloads retry transport failures up to
+three times, and WorldCover uses a five-minute timeout for each attempt.
+
 Wyre and Thames are intentionally absent from this notebook. Their evaluations
 have already been consumed, so they may be processed only for engineering
 diagnostics and must not influence feature selection or model tuning.

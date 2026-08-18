@@ -33,8 +33,9 @@ def run_upstream_area_pipeline(
     root: Path = Path("data"),
     *,
     buffer_metres: int = 20_000,
+    force: bool = False,
 ) -> Path:  # pragma: no cover
-    """Build all current upstream features for one configured study area."""
+    """Build all upstream features, resuming completed expensive stages by default."""
     area = load_study_areas().by_id(area_id)
     raw_study = root / "raw" / "study-areas"
     feature_study = root / "features" / "study-areas"
@@ -48,9 +49,12 @@ def run_upstream_area_pipeline(
     routing = root / "raw" / "hydrology" / f"{area_id}-merit-routing-90m.tif"
     land_cover = root / "raw" / "land-cover" / f"{area_id}-worldcover-100m.tif"
     climate = root / "raw" / "climate" / f"{area_id}-era5-land-2024-1km.tif"
-    download_merit_routing_grid(geometry, routing, buffer_metres=buffer_metres)
-    download_worldcover_pressure_grid(geometry, land_cover, buffer_metres=buffer_metres)
-    download_era5_land_rainfall_grid(geometry, climate, buffer_metres=buffer_metres)
+    if force or not routing.exists():
+        download_merit_routing_grid(geometry, routing, buffer_metres=buffer_metres)
+    if force or not land_cover.exists():
+        download_worldcover_pressure_grid(geometry, land_cover, buffer_metres=buffer_metres)
+    if force or not climate.exists():
+        download_era5_land_rainfall_grid(geometry, climate, buffer_metres=buffer_metres)
 
     diagnostics = product_study / f"{area_id}-watershed-diagnostics.parquet"
     watersheds = feature_study / f"{area_id}-site-watersheds.geojson"
