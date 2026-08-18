@@ -116,44 +116,49 @@ def fetch_observations(
     date_to: str = "2024-12-31",
     determinands: tuple[str, ...] = CORE_DETERMINANDS,
     page_size: int = 250,
+    site_batch_size: int = 25,
 ) -> list[dict[str, Any]]:
     """Retrieve bounded, paginated observations for at most 100 sampling points."""
     if not point_notations or len(point_notations) > 100:
         raise ValueError("point_notations must contain between 1 and 100 values")
     if not 1 <= page_size <= 250:
         raise ValueError("page_size must be between 1 and 250 for JSON-LD")
+    if not 1 <= site_batch_size <= 100:
+        raise ValueError("site_batch_size must be between 1 and 100")
     endpoint = (
         load_catalogue()
         .by_id("ea-water-quality")
         .endpoint.replace("/sampling-point", "/observation")
     )
-    params: dict[str, str | int] = {
-        "pointNotation": ",".join(point_notations),
-        "dateFrom": date_from,
-        "dateTo": date_to,
-        "determinand": ",".join(determinands),
-        "limit": page_size,
-    }
 
     def retrieve(active_client: httpx.Client) -> list[dict[str, Any]]:
         members: list[dict[str, Any]] = []
-        skip = 0
-        while True:
-            params["skip"] = skip
-            response = active_client.post(
-                endpoint,
-                params=params,
-                json=None,
-                headers={"Accept": "application/ld+json"},
-            )
-            response.raise_for_status()
-            page = response.json().get("member", [])
-            if not isinstance(page, list):
-                raise ValueError("Expected a paginated member list")
-            members.extend(page)
-            if len(page) < page_size:
-                break
-            skip += page_size
+        for start in range(0, len(point_notations), site_batch_size):
+            batch = point_notations[start : start + site_batch_size]
+            params: dict[str, str | int] = {
+                "pointNotation": ",".join(batch),
+                "dateFrom": date_from,
+                "dateTo": date_to,
+                "determinand": ",".join(determinands),
+                "limit": page_size,
+            }
+            skip = 0
+            while True:
+                params["skip"] = skip
+                response = active_client.post(
+                    endpoint,
+                    params=params,
+                    json=None,
+                    headers={"Accept": "application/ld+json"},
+                )
+                response.raise_for_status()
+                page = response.json().get("member", [])
+                if not isinstance(page, list):
+                    raise ValueError("Expected a paginated member list")
+                members.extend(page)
+                if len(page) < page_size:
+                    break
+                skip += page_size
         return members
 
     if client is not None:

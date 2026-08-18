@@ -12,6 +12,10 @@ uses half the upper bound for results reported below a detection limit, and the
 lower bound for results reported above a quantification limit. This substitution
 is explicit, reproducible, and should be sensitivity-tested in later modelling.
 
+Observation requests are split into batches of at most 25 sampling points, each
+with independent 250-row JSON-LD pagination. Although the API accepts up to 100
+point identifiers, smaller batches avoid gateway failures on larger study areas.
+
 The source is observational monitoring data. Site selection and sampling
 frequency are not spatially uniform, and absence of observations is not evidence
 of good environmental quality. In the 2024 pilot extract, only a subset of the

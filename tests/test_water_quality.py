@@ -82,6 +82,22 @@ def test_fetch_observations_paginates() -> None:
 def test_fetch_observations_rejects_too_many_points() -> None:
     with pytest.raises(ValueError, match="between 1 and 100"):
         fetch_observations([])
+    with pytest.raises(ValueError, match="site_batch_size"):
+        fetch_observations(["NW-1"], site_batch_size=0)
+
+
+@respx.mock
+def test_fetch_observations_batches_sites() -> None:
+    route = respx.post(ENDPOINT.replace("sampling-point", "observation")).mock(
+        side_effect=[
+            httpx.Response(200, json={"member": [{"id": "one"}]}),
+            httpx.Response(200, json={"member": [{"id": "two"}]}),
+        ]
+    )
+    with httpx.Client() as client:
+        result = fetch_observations(["NW-1", "NW-2", "NW-3"], client, site_batch_size=2)
+    assert [item["id"] for item in result] == ["one", "two"]
+    assert route.call_count == 2
 
 
 def test_observations_frame() -> None:
