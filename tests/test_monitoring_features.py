@@ -53,12 +53,14 @@ def test_add_satellite_season_excludes_outside_window() -> None:
 
 def test_build_monitoring_feature_table() -> None:
     observations, points, grid, satellite = fixtures()
-    result = build_monitoring_feature_table(observations, points, grid, satellite)
+    terrain = pd.DataFrame({"cell_id": ["cell-1"], "relief_m": [42.0]})
+    result = build_monitoring_feature_table(observations, points, grid, satellite, terrain)
     assert len(result) == 1
     assert result.loc[0, "target_mean"] == 2.0
     assert result.loc[0, "observation_count"] == 2
     assert result.loc[0, "censored_fraction"] == 0.5
     assert result.loc[0, "NDVI_mean"] == 0.7
+    assert result.loc[0, "relief_m"] == 42.0
 
 
 def test_assign_sites_requires_crs() -> None:

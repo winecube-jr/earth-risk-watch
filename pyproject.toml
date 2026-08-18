@@ -85,5 +85,14 @@ module = ["ee", "ee.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["geopandas", "geopandas.*", "pandas", "pandas.*", "shapely", "shapely.*"]
+module = [
+  "geopandas",
+  "geopandas.*",
+  "pandas",
+  "pandas.*",
+  "rasterio",
+  "rasterio.*",
+  "shapely",
+  "shapely.*",
+]
 ignore_missing_imports = true

@@ -14,6 +14,10 @@ site count, censored count, and censored fraction. Predictor columns are joined
 from the matching grid cell and season. Missing monitoring remains missing: the
 pipeline does not manufacture targets for unmonitored cells.
 
+Static terrain predictors from the LiDAR-derived grid table are joined by
+`cell_id`, adding elevation, relief, slope, and LiDAR coverage context to every
+seasonal outcome row.
+
 This is an exploratory pilot table, not yet a defensible national training set.
 Nearby observations can be spatially and temporally dependent, monitoring is
 preferential rather than random, and the small number of monitored cells cannot

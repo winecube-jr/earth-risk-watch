@@ -24,10 +24,10 @@ sources:
     licence: Public domain
     themes: [land, water, habitat]
   - id: ea-national-lidar
-    title: Environment Agency National LiDAR Programme
+    title: Environment Agency LIDAR Composite DTM 1m
     provider: Environment Agency
-    access: download_index
-    endpoint: https://www.data.gov.uk/dataset/f0db0249-f17b-4036-9e65-309148c97ce4/national-lidar-programme
+    access: wcs
+    endpoint: https://environment.data.gov.uk/geoservices/datasets/13787b9a-26a4-4775-8523-806d13af58fc/wcs
     geography: England
     licence: Open Government Licence 3.0
     themes: [land, water, habitat, climate]

@@ -44,6 +44,8 @@ earth-risk build-ecological-outcomes
 earth-risk extract-water-sampling-points
 earth-risk extract-water-observations
 earth-risk build-monitoring-features
+earth-risk extract-lidar-terrain
+earth-risk build-terrain-features
 pytest
 ```
 
@@ -58,6 +60,8 @@ The live regulatory monitoring extraction and censored-result treatment are
 documented in [docs/water-quality.md](docs/water-quality.md).
 The spatial-temporal monitoring linkage is documented in
 [docs/monitoring-features.md](docs/monitoring-features.md).
+The bounded Environment Agency LiDAR method is documented in
+[docs/terrain.md](docs/terrain.md).
 
 ## Project principles
 

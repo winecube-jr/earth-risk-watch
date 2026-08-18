@@ -52,6 +52,7 @@ def build_monitoring_feature_table(
     sampling_points: gpd.GeoDataFrame,
     grid: gpd.GeoDataFrame,
     satellite: pd.DataFrame,
+    terrain: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Aggregate site observations and attach same-cell, same-season predictors."""
     assignments = assign_sites_to_grid(sampling_points, grid)
@@ -78,6 +79,10 @@ def build_monitoring_feature_table(
     )
     outcomes["censored_fraction"] = outcomes["censored_count"] / outcomes["observation_count"]
     predictors = satellite.drop(columns=["start_date", "end_date"])
+    if terrain is not None:
+        if terrain["cell_id"].duplicated().any():
+            raise ValueError("Terrain table contains duplicate cell IDs")
+        predictors = predictors.merge(terrain, on="cell_id", how="left", validate="many_to_one")
     table = outcomes.merge(predictors, on=["cell_id", "season"], how="left", validate="many_to_one")
     if table.duplicated(list(KEY_COLUMNS)).any():
         raise ValueError("Monitoring feature table contains duplicate keys")
@@ -115,6 +120,7 @@ def save_monitoring_feature_table(
     sampling_points_path: Path,
     grid_path: Path,
     satellite_path: Path,
+    terrain_path: Path,
     output: Path,
 ) -> Path:
     """Build and save the pilot monitoring feature table with provenance."""
@@ -122,7 +128,8 @@ def save_monitoring_feature_table(
     sampling_points = gpd.read_file(sampling_points_path)
     grid = gpd.read_file(grid_path)
     satellite = pd.read_parquet(satellite_path)
-    table = build_monitoring_feature_table(observations, sampling_points, grid, satellite)
+    terrain = pd.read_parquet(terrain_path)
+    table = build_monitoring_feature_table(observations, sampling_points, grid, satellite, terrain)
     output.parent.mkdir(parents=True, exist_ok=True)
     table.to_parquet(output, index=False)
     provenance = {

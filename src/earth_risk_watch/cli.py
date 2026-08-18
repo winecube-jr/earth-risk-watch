@@ -22,6 +22,7 @@ from earth_risk_watch.monitoring_features import save_monitoring_feature_table
 from earth_risk_watch.outcomes import build_ecological_outcomes
 from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.satellite import load_sentinel_job
+from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
 
 app = typer.Typer(no_args_is_help=True, help="Earth Risk Watch pipeline tools.")
 catalogue_app = typer.Typer(no_args_is_help=True, help="Inspect configured data sources.")
@@ -159,10 +160,34 @@ def build_monitoring_features(
     sampling_points: Path = Path("data/raw/water-quality/pilot-sampling-points.geojson"),
     grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
     satellite: Path = Path("data/features/sentinel/pilot-seasonal.parquet"),
+    terrain: Path = Path("data/features/terrain/pilot-2km.parquet"),
     output: Path = Path("data/features/monitoring/pilot-seasonal.parquet"),
 ) -> None:
     """Link seasonal water observations to same-cell satellite predictors."""
-    target = save_monitoring_feature_table(observations, sampling_points, grid, satellite, output)
+    target = save_monitoring_feature_table(
+        observations, sampling_points, grid, satellite, terrain, output
+    )
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-lidar-terrain")
+def extract_lidar_terrain(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/raw/lidar/pilot-dtm-10m.tif"),
+) -> None:
+    """Download a bounded 10 m pilot DTM from the official LiDAR WCS."""
+    target = save_lidar_subset(geometry, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-terrain-features")
+def build_terrain_feature_command(
+    dtm: Path = Path("data/raw/lidar/pilot-dtm-10m.tif"),
+    grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    output: Path = Path("data/features/terrain/pilot-2km.parquet"),
+) -> None:
+    """Build elevation, relief, and slope predictors for pilot grid cells."""
+    target = save_terrain_features(dtm, grid, output)
     typer.echo(f"Created {target}")
 
 
