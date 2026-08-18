@@ -83,3 +83,7 @@ packages = ["earth_risk_watch"]
 [[tool.mypy.overrides]]
 module = ["ee", "ee.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["geopandas", "geopandas.*", "shapely", "shapely.*"]
+ignore_missing_imports = true

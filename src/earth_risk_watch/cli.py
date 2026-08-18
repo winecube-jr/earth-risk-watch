@@ -12,6 +12,7 @@ from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
     save_pilot_geometry,
 )
+from earth_risk_watch.grid import build_clipped_grid
 from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.satellite import load_sentinel_job
 
@@ -91,6 +92,17 @@ def sentinel_seasonal(
 ) -> None:
     """Run controlled seasonal Sentinel summaries in Earth Engine."""
     target = run_seasonal_summary(geometry, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-grid")
+def build_grid(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    cell_size_metres: int = 2_000,
+) -> None:
+    """Create clipped British National Grid modelling units."""
+    target = build_clipped_grid(geometry, output, cell_size_metres=cell_size_metres)
     typer.echo(f"Created {target}")
 
 

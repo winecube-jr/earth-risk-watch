@@ -38,6 +38,7 @@ earth-risk sentinel-plan
 earth-risk extract-ea-geometry
 earth-risk sentinel-summary
 earth-risk sentinel-seasonal
+earth-risk build-grid
 pytest
 ```
 
