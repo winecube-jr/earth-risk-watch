@@ -27,7 +27,17 @@ def build_geographic_partitions(
             part.insert(0, "area_id", area_id)
             part.insert(1, "partition_role", role)
             parts.append(part)
-    return pd.concat(parts, ignore_index=True)
+    combined = pd.concat(parts, ignore_index=True)
+    development_cells = set(combined.loc[combined["partition_role"] == "development", "cell_id"])
+    external_cells = set(
+        combined.loc[combined["partition_role"] == "external_validation", "cell_id"]
+    )
+    shared_cells = development_cells & external_cells
+    if shared_cells:
+        raise ValueError(
+            f"Grid cells cannot cross partition roles: {', '.join(sorted(shared_cells))}"
+        )
+    return combined
 
 
 def partition_readiness(table: pd.DataFrame) -> dict[str, object]:
@@ -82,17 +92,14 @@ def partition_readiness(table: pd.DataFrame) -> dict[str, object]:
 
 
 def save_geographic_partitions(
-    development_path: Path,
-    external_path: Path,
+    development_paths: dict[str, Path],
+    external_paths: dict[str, Path],
     output: Path,
-    *,
-    development_area_id: str,
-    external_area_id: str,
 ) -> Path:
     """Save a role-labelled partition table and readiness provenance."""
     table = build_geographic_partitions(
-        {development_area_id: pd.read_parquet(development_path)},
-        {external_area_id: pd.read_parquet(external_path)},
+        {area_id: pd.read_parquet(path) for area_id, path in development_paths.items()},
+        {area_id: pd.read_parquet(path) for area_id, path in external_paths.items()},
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     table.to_parquet(output, index=False)
@@ -107,3 +114,16 @@ def save_geographic_partitions(
         json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
     )
     return output
+
+
+def parse_partition_paths(values: list[str]) -> dict[str, Path]:
+    """Parse repeatable AREA_ID=PATH command-line specifications."""
+    parsed = {}
+    for value in values:
+        area_id, separator, path = value.partition("=")
+        if not separator or not area_id.strip() or not path.strip():
+            raise ValueError("Partition inputs must use AREA_ID=PATH")
+        if area_id in parsed:
+            raise ValueError(f"Duplicate partition area: {area_id}")
+        parsed[area_id] = Path(path)
+    return parsed

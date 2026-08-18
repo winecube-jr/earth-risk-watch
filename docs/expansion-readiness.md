@@ -9,12 +9,15 @@ blocked. This does not affect continued data engineering and coverage expansion.
 | Area | Role | Area (km²) | Grid cells | Active river sites | Monitored cells | 2024 observations |
 |---|---|---:|---:|---:|---:|---:|
 | Lune Management Catchment | development | 1,200.6 | 379 | 33 | 29 | 2,382 |
+| Ribble Management Catchment | development | 1,404.5 | 437 | 75 | 67 | 3,895 |
 | Wyre Management Catchment | external validation | 384.0 | 138 | 17 | 13 | 1,601 |
-| **Total** | | **1,584.6** | **517** | **50** | **42** | **3,983** |
+| **Total** | | **2,989.1** | **954** | **125** | **109** | **7,878** |
 
-The inventories were run from commit `ef615f9` using the public-data GitHub
-Actions workflow on 18 August 2026. The Lune result is
+The inventories were run using the public-data GitHub Actions workflow on
+18 August 2026. The Lune result is
 [run 32139494960](https://github.com/winecube-jr/earth-risk-watch/actions/runs/32139494960)
+the Ribble result is
+[run 32142061181](https://github.com/winecube-jr/earth-risk-watch/actions/runs/32142061181),
 and the Wyre result is
 [run 32140087907](https://github.com/winecube-jr/earth-risk-watch/actions/runs/32140087907).
 
@@ -25,10 +28,12 @@ external coverage floor, but represent only one catchment. Any performance resul
 must therefore be presented as an external pilot, not evidence of UK-wide
 generalisability.
 
-The next build stage is to produce Sentinel and terrain features for both areas,
-train only on Lune, and evaluate once on Wyre. Predictive work remains subordinate
-to data leakage checks, per-determinand sample sizes, censored-result treatment,
-spatial dependence, and uncertainty reporting.
+Matching Sentinel and common-terrain features now produce 96 development cells
+across Lune and Ribble and 13 external cells in Wyre, with no grid-cell overlap
+between roles. This clears the minimum software gate for a geographically grouped
+experiment. Predictive work remains subordinate to data leakage checks,
+per-determinand sample sizes, censored-result treatment, spatial dependence, and
+uncertainty reporting.
 
 ## Terrain coverage finding
 
