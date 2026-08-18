@@ -10,6 +10,9 @@ merit_hydro:
     - river_width_max_m
     - permanent_water_fraction
   interpretation: hydrologic context, not delineated upstream pollution load
+  routing_export_bands: [dir, upa]
+  site_snap_radius_pixels: 5
+  routing_export_buffer_metres: 20000
 hydroatlas:
   asset: WWF/HydroATLAS/v1/Basins/level12
   assignment: smallest level-12 polygon intersecting each monitoring point

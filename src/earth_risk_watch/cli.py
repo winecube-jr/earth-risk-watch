@@ -8,6 +8,7 @@ import typer
 
 from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.cloud_run import (
+    download_merit_routing_grid,
     run_dem_grid_features,
     run_grid_features,
     run_hydroatlas_site_features,
@@ -33,6 +34,7 @@ from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
 from earth_risk_watch.validation import parse_partition_paths, save_geographic_partitions
+from earth_risk_watch.watershed import save_site_delineation_diagnostics
 
 app = typer.Typer(no_args_is_help=True, help="Earth Risk Watch pipeline tools.")
 catalogue_app = typer.Typer(no_args_is_help=True, help="Inspect configured data sources.")
@@ -172,6 +174,36 @@ def hydroatlas_site_features(
 ) -> None:
     """Assign monitoring sites to HydroATLAS basins and upstream attributes."""
     target = run_hydroatlas_site_features(points, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("extract-merit-routing-grid")
+def extract_merit_routing_grid(
+    geometry: Path = Path("data/raw/ea-catchments/pilot.geojson"),
+    output: Path = Path("data/raw/hydrology/pilot-merit-routing-90m.tif"),
+    buffer_metres: int = typer.Option(20_000, min=0),
+) -> None:
+    """Download bounded MERIT D8 direction and upstream-area bands."""
+    target = download_merit_routing_grid(geometry, output, buffer_metres=buffer_metres)
+    typer.echo(f"Created {target}")
+
+
+@app.command("diagnose-site-watersheds")
+def diagnose_site_watersheds(
+    routing: Path,
+    points: Path,
+    observations: Path,
+    output: Path = Path("data/products/hydrology/site-watershed-diagnostics.parquet"),
+    snap_radius_pixels: int = typer.Option(5, min=0),
+) -> None:
+    """Trace active-site watersheds and report snap and boundary diagnostics."""
+    target = save_site_delineation_diagnostics(
+        routing,
+        points,
+        observations,
+        output,
+        snap_radius_pixels=snap_radius_pixels,
+    )
     typer.echo(f"Created {target}")
 
 
