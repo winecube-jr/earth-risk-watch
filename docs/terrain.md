@@ -1,4 +1,4 @@
-# LiDAR terrain predictors
+# Terrain predictors
 
 The terrain pipeline uses the Environment Agency LIDAR Composite DTM 1 m WCS.
 It sends the pilot boundary's British National Grid bounding box to the service
@@ -15,3 +15,13 @@ The 2022 composite combines surveys captured between 2000 and 2022, choosing the
 newest suitable coverage. It is therefore a largely static terrain covariate,
 not a contemporaneous 2024 observation. Resampling to 10 m is appropriate for
 catchment-scale screening but not asset-level drainage or engineering decisions.
+The modelling baseline uses `COPERNICUS/DEM/GLO30` at a common 30 m processing
+scale for complete, comparable terrain coverage across development and external
+validation catchments. Mean, standard deviation, minimum and maximum elevation,
+plus mean and standard deviation of slope, are summarized to each 2 km cell in
+Earth Engine.
+
+Environment Agency LiDAR remains a higher-resolution supplementary source. Its
+coverage is explicitly represented by `valid_pixel_count`; missing coverage is
+never imputed from the other catchment. This prevents unequal LiDAR availability
+from acting as a hidden geographic identifier in validation.

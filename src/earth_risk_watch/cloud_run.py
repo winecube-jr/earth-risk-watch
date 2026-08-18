@@ -10,6 +10,7 @@ from typing import Any
 
 import pandas as pd
 
+from earth_risk_watch.elevation import rows_from_dem_earth_engine
 from earth_risk_watch.feature_table import (
     FEATURE_COLUMNS,
     rows_from_earth_engine,
@@ -172,6 +173,52 @@ def run_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no cove
         "seasons": sorted(frame["season"].unique().tolist()),
         "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "warning": "Model-ready predictors only; no validated risk outcome is included.",
+    }
+    output.with_suffix(output.suffix + ".provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
+    return output
+
+
+def run_dem_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no cover
+    """Extract common 30 m Copernicus DEM features for every modelling cell."""
+    import ee
+
+    settings = Settings()
+    if settings.earthengine_project is None:
+        raise RuntimeError("EARTHENGINE_PROJECT is not configured")
+    ee.Initialize(project=settings.earthengine_project)
+    grid_geojson: dict[str, Any] = json.loads(grid_path.read_text(encoding="utf-8"))
+    grid = ee.FeatureCollection(grid_geojson)
+    elevation = (
+        ee.ImageCollection("COPERNICUS/DEM/GLO30").select("DEM").mosaic().rename("elevation")
+    )
+    image = elevation.addBands(ee.Terrain.slope(elevation).rename("slope"))
+    reducer = (
+        ee.Reducer.mean()
+        .combine(ee.Reducer.stdDev(), sharedInputs=True)
+        .combine(ee.Reducer.minMax(), sharedInputs=True)
+    )
+    reduced = image.reduceRegions(
+        collection=grid,
+        reducer=reducer,
+        scale=30,
+        tileScale=4,
+    ).getInfo()
+    frame = rows_from_dem_earth_engine(reduced["features"])
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_suffix(output.suffix + ".tmp")
+    frame.to_parquet(temporary, index=False)
+    os.replace(temporary, output)
+    provenance = {
+        "created_at": datetime.now(UTC).isoformat(),
+        "earth_engine_project": settings.earthengine_project,
+        "source": "COPERNICUS/DEM/GLO30",
+        "processing_scale_metres": 30,
+        "rows": len(frame),
+        "cells": int(frame["cell_id"].nunique()),
+        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "role": "Common-coverage terrain baseline; LiDAR remains supplementary.",
     }
     output.with_suffix(output.suffix + ".provenance.json").write_text(
         json.dumps(provenance, indent=2) + "\n", encoding="utf-8"

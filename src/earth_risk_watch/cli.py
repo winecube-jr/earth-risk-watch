@@ -7,6 +7,7 @@ import typer
 
 from earth_risk_watch.catalogue import load_catalogue
 from earth_risk_watch.cloud_run import (
+    run_dem_grid_features,
     run_grid_features,
     run_pilot_summary,
     run_seasonal_summary,
@@ -136,6 +137,16 @@ def sentinel_grid_features(
 ) -> None:
     """Build the model-ready seasonal Sentinel feature table."""
     target = run_grid_features(grid, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("dem-grid-features")
+def dem_grid_features(
+    grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    output: Path = Path("data/features/terrain/pilot-dem-30m.parquet"),
+) -> None:
+    """Build common-coverage Copernicus DEM features in Earth Engine."""
+    target = run_dem_grid_features(grid, output)
     typer.echo(f"Created {target}")
 
 
