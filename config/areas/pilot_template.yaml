@@ -1,0 +1,9 @@
+area:
+  id: lune-rawthey-greta
+  name: Lune - Rawthey to Greta (provisional engineering pilot)
+  kind: catchment
+  geometry_source: https://environment.data.gov.uk/catchment-planning/OperationalCatchment/3290.geojson
+  target_crs: EPSG:27700
+  lidar_resolution_metres: 1
+  satellite_resolution_metres: 10
+  notes: Used to exercise the pipeline; final pilot selection remains evidence-led.

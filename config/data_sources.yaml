@@ -1,0 +1,73 @@
+sources:
+  - id: sentinel-2-sr
+    title: Sentinel-2 Level-2A Surface Reflectance
+    provider: Copernicus / ESA
+    access: earth_engine
+    endpoint: COPERNICUS/S2_SR_HARMONIZED
+    geography: UK
+    licence: Copernicus Data Space Legal Notice
+    themes: [land, water, habitat]
+  - id: sentinel-1-grd
+    title: Sentinel-1 Ground Range Detected
+    provider: Copernicus / ESA
+    access: earth_engine
+    endpoint: COPERNICUS/S1_GRD
+    geography: UK
+    licence: Copernicus Data Space Legal Notice
+    themes: [water, climate, land]
+  - id: landsat-c2-l2
+    title: Landsat Collection 2 Level 2
+    provider: USGS
+    access: earth_engine
+    endpoint: LANDSAT/LC08/C02/T1_L2
+    geography: UK
+    licence: Public domain
+    themes: [land, water, habitat]
+  - id: ea-national-lidar
+    title: Environment Agency National LiDAR Programme
+    provider: Environment Agency
+    access: download_index
+    endpoint: https://www.data.gov.uk/dataset/f0db0249-f17b-4036-9e65-309148c97ce4/national-lidar-programme
+    geography: England
+    licence: Open Government Licence 3.0
+    themes: [land, water, habitat, climate]
+  - id: ea-catchment-api
+    title: Catchment Data Explorer pilot classifications
+    provider: Environment Agency
+    access: http_api
+    endpoint: https://environment.data.gov.uk/catchment-planning/OperationalCatchment/3290/classifications.csv
+    geography: England
+    licence: Open Government Licence 3.0
+    themes: [water]
+  - id: ea-water-quality
+    title: Water Quality Explorer
+    provider: Environment Agency
+    access: download_portal
+    endpoint: https://environment.data.gov.uk/water-quality/view/landing
+    geography: England
+    licence: Open Government Licence 3.0
+    themes: [water]
+  - id: ea-ecology
+    title: Ecology and Fish Data Explorer
+    provider: Environment Agency
+    access: download_portal
+    endpoint: https://environment.data.gov.uk/ecology/explorer/
+    geography: England
+    licence: Open Government Licence 3.0
+    themes: [water, habitat]
+  - id: os-open-rivers
+    title: OS Open Rivers
+    provider: Ordnance Survey
+    access: download_portal
+    endpoint: https://www.ordnancesurvey.co.uk/products/os-open-rivers
+    geography: Great Britain
+    licence: Open Government Licence 3.0
+    themes: [water]
+  - id: haduk-grid
+    title: HadUK-Grid
+    provider: Met Office
+    access: download_portal
+    endpoint: https://www.metoffice.gov.uk/hadobs/hadukgrid/data/download.html
+    geography: UK
+    licence: Open Government Licence 3.0
+    themes: [climate]

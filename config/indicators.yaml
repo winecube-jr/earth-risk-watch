@@ -1,0 +1,28 @@
+dimensions:
+  water:
+    indicators:
+      - runoff_connectivity
+      - sediment_delivery_pressure
+      - nutrient_pressure
+      - ecological_status
+      - riparian_thermal_exposure
+  land:
+    indicators:
+      - persistent_bare_soil
+      - erosion_susceptibility
+      - vegetation_moisture_anomaly
+  habitat:
+    indicators:
+      - habitat_fragmentation
+      - riparian_continuity
+      - ecological_connectivity
+  climate:
+    indicators:
+      - flood_susceptibility
+      - drought_exposure
+      - heat_stress
+  people:
+    indicators:
+      - population_exposure
+      - social_vulnerability
+      - access_to_nature

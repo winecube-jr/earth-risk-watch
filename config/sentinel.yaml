@@ -1,0 +1,14 @@
+sentinel_2:
+  collection: COPERNICUS/S2_SR_HARMONIZED
+  cloud_probability_collection: COPERNICUS/S2_CLOUD_PROBABILITY
+  start_date: "2024-01-01"
+  end_date: "2025-01-01"
+  maximum_scene_cloud_percent: 60
+  output_scale_metres: 10
+  composite: median
+  bands:
+    reflectance: [B2, B3, B4, B8, B11, B12]
+    indices: [NDVI, NDMI, MNDWI, BSI]
+  notes:
+    - SCL classes 3, 8, 9, 10, and 11 are excluded.
+    - The annual median is a baseline and will be complemented by seasonal features.

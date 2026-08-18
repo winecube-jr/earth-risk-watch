@@ -1,0 +1,15 @@
+project:
+  name: earth-risk-watch
+  jurisdiction: England
+  crs: EPSG:27700
+  national_resolution_metres: 100
+  pilot_resolution_metres: 10
+  policy_framework: Environmental Improvement Plan 2025
+storage:
+  retain_raw_data: false
+  preferred_vector_format: geoparquet
+  preferred_raster_format: cloud-optimized-geotiff
+validation:
+  spatial_cross_validation: true
+  minimum_spatial_folds: 5
+  publish_uncertainty: true
