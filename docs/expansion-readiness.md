@@ -1,8 +1,10 @@
 # Expansion readiness
 
-Cloud inventories establish that the current expansion has enough spatial groups
-to begin building a geographically grouped modelling experiment. They do not
-establish that a model is valid or suitable for operational decisions.
+Cloud inventories establish adequate combined coverage, but holdout cells cannot
+be counted as training support. The linked feature tables currently contain 29
+Lune development cells and 13 Wyre holdout cells. The development partition is
+therefore one cell below the 30-cell software floor; predictive training remains
+blocked. This does not affect continued data engineering and coverage expansion.
 
 | Area | Role | Area (km²) | Grid cells | Active river sites | Monitored cells | 2024 observations |
 |---|---|---:|---:|---:|---:|---:|

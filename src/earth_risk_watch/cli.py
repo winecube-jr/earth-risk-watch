@@ -28,6 +28,7 @@ from earth_risk_watch.readiness import checks_as_dicts
 from earth_risk_watch.risk_screen import save_risk_screen
 from earth_risk_watch.satellite import load_sentinel_job
 from earth_risk_watch.terrain import save_lidar_subset, save_terrain_features
+from earth_risk_watch.validation import save_geographic_partitions
 
 app = typer.Typer(no_args_is_help=True, help="Earth Risk Watch pipeline tools.")
 catalogue_app = typer.Typer(no_args_is_help=True, help="Inspect configured data sources.")
@@ -251,6 +252,25 @@ def build_evidence_pack_command(
 ) -> None:
     """Build the pilot diagnostic report and investigation shortlist."""
     target = save_evidence_pack(screen, monitoring, output)
+    typer.echo(f"Created {target}")
+
+
+@app.command("build-validation-partitions")
+def build_validation_partitions_command(
+    development: Path,
+    external: Path,
+    output: Path = Path("data/features/validation/geographic-partitions.parquet"),
+    development_area_id: str = "lune-management",
+    external_area_id: str = "wyre-management",
+) -> None:
+    """Label development and external feature tables without random splitting."""
+    target = save_geographic_partitions(
+        development,
+        external,
+        output,
+        development_area_id=development_area_id,
+        external_area_id=external_area_id,
+    )
     typer.echo(f"Created {target}")
 
 
