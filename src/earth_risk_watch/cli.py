@@ -22,7 +22,6 @@ from earth_risk_watch.extract.ea_catchments import (
 )
 from earth_risk_watch.extract.water_quality import save_pilot_observations, save_sampling_points
 from earth_risk_watch.grid import build_clipped_grid
-from earth_risk_watch.model import save_fixed_baseline_evaluation
 from earth_risk_watch.monitoring_features import save_monitoring_feature_table
 from earth_risk_watch.outcomes import build_ecological_outcomes
 from earth_risk_watch.publish import build_risk_map
@@ -280,6 +279,8 @@ def evaluate_fixed_baseline_command(
     output: Path = Path("data/products/model/wyre-fixed-baseline.parquet"),
 ) -> None:
     """Fit the preregistered development baseline and evaluate on the holdout."""
+    from earth_risk_watch.model import save_fixed_baseline_evaluation
+
     target = save_fixed_baseline_evaluation(table, output)
     typer.echo(f"Created {target}")
 
