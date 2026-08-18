@@ -39,13 +39,15 @@ earth-risk extract-ea-geometry
 earth-risk sentinel-summary
 earth-risk sentinel-seasonal
 earth-risk build-grid
+earth-risk sentinel-grid-features
 pytest
 ```
 
 See [docs/setup.md](docs/setup.md) for cloud authentication and
 [docs/architecture.md](docs/architecture.md) for the system design. The current
 Earth-observation method is documented in
-[docs/satellite-baseline.md](docs/satellite-baseline.md).
+[docs/satellite-baseline.md](docs/satellite-baseline.md), and the model-ready
+table contract is described in [docs/feature-table.md](docs/feature-table.md).
 
 ## Project principles
 

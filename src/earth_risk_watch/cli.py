@@ -6,7 +6,11 @@ from pathlib import Path
 import typer
 
 from earth_risk_watch.catalogue import load_catalogue
-from earth_risk_watch.cloud_run import run_pilot_summary, run_seasonal_summary
+from earth_risk_watch.cloud_run import (
+    run_grid_features,
+    run_pilot_summary,
+    run_seasonal_summary,
+)
 from earth_risk_watch.demo import build_demo_manifest
 from earth_risk_watch.extract.ea_catchments import (
     save_pilot_classifications,
@@ -103,6 +107,16 @@ def build_grid(
 ) -> None:
     """Create clipped British National Grid modelling units."""
     target = build_clipped_grid(geometry, output, cell_size_metres=cell_size_metres)
+    typer.echo(f"Created {target}")
+
+
+@app.command("sentinel-grid-features")
+def sentinel_grid_features(
+    grid: Path = Path("data/staged/grid/pilot-2km.geojson"),
+    output: Path = Path("data/features/sentinel/pilot-seasonal.parquet"),
+) -> None:
+    """Build the model-ready seasonal Sentinel feature table."""
+    target = run_grid_features(grid, output)
     typer.echo(f"Created {target}")
 
 

@@ -1,11 +1,20 @@
 """Small, controlled Earth Engine executions."""
 
+import hashlib
 import json
+import os
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
+from earth_risk_watch.feature_table import (
+    FEATURE_COLUMNS,
+    rows_from_earth_engine,
+    validate_feature_table,
+)
 from earth_risk_watch.satellite import (
     INDEX_BANDS,
     build_composite,
@@ -104,4 +113,67 @@ def run_seasonal_summary(geometry_path: Path, output: Path) -> Path:  # pragma: 
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(product, indent=2) + "\n", encoding="utf-8")
+    return output
+
+
+def run_grid_features(grid_path: Path, output: Path) -> Path:  # pragma: no cover
+    """Extract seasonal Sentinel features for every configured modelling cell."""
+    import ee
+
+    settings = Settings()
+    if settings.earthengine_project is None:
+        raise RuntimeError("EARTHENGINE_PROJECT is not configured")
+    ee.Initialize(project=settings.earthengine_project)
+    grid_geojson: dict[str, Any] = json.loads(grid_path.read_text(encoding="utf-8"))
+    grid = ee.FeatureCollection(grid_geojson)
+    geometry = grid.geometry()
+    baseline = load_sentinel_job()
+    reducer = ee.Reducer.mean().combine(ee.Reducer.stdDev(), sharedInputs=True)
+    rows: list[dict[str, Any]] = []
+    for season in load_seasons():
+        job = replace(baseline, start_date=season.start_date, end_date=season.end_date)
+        collection = (
+            ee.ImageCollection(job.collection)
+            .filterBounds(geometry)
+            .filterDate(job.start_date.isoformat(), job.end_date.isoformat())
+            .filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", job.maximum_scene_cloud_percent))
+        )
+        reduced = (
+            build_composite(ee, geometry, job)
+            .select(list(INDEX_BANDS))
+            .reduceRegions(
+                collection=grid,
+                reducer=reducer,
+                scale=100,
+                tileScale=4,
+            )
+            .getInfo()
+        )
+        rows.extend(
+            rows_from_earth_engine(
+                reduced["features"],
+                season=season.name,
+                start_date=season.start_date.isoformat(),
+                end_date=season.end_date.isoformat(),
+                scene_count=collection.size().getInfo(),
+            )
+        )
+    frame = pd.DataFrame(rows).reindex(columns=FEATURE_COLUMNS)
+    validate_feature_table(frame)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_suffix(output.suffix + ".tmp")
+    frame.to_parquet(temporary, index=False)
+    os.replace(temporary, output)
+    provenance = {
+        "created_at": datetime.now(UTC).isoformat(),
+        "earth_engine_project": settings.earthengine_project,
+        "rows": len(frame),
+        "cells": int(frame["cell_id"].nunique()),
+        "seasons": sorted(frame["season"].unique().tolist()),
+        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "warning": "Model-ready predictors only; no validated risk outcome is included.",
+    }
+    output.with_suffix(output.suffix + ".provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
     return output
