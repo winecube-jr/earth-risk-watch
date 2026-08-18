@@ -50,7 +50,7 @@ dev = [
   "earth-risk-watch[geo,model]",
   "bandit>=1.7,<2",
   "mypy>=1.11,<2",
-  "pytest>=8.3,<9",
+  "pytest>=8.3,<10",
   "pytest-cov>=5,<8",
   "respx>=0.21,<1",
   "ruff>=0.6,<1",
