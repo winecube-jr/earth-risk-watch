@@ -30,3 +30,25 @@ terrain. No operational, causal, regulatory, or England-wide claim is supported.
 Wyre is no longer an untouched holdout for subsequent model redesign. Any change
 to features, transformations, algorithms or hyperparameters informed by these
 results requires a newly reserved catchment for honest external evaluation.
+
+## Thames replication
+
+The unchanged v1 specification was subsequently applied to the independently
+reserved Thames and Chilterns South catchment. Its feature table contains 738
+holdout rows across 39 monitored cells, with no cell overlap with Lune or Ribble.
+
+| Determinand | Holdout rows | MAE | R² | Spearman | MAE skill vs median |
+|---|---:|---:|---:|---:|---:|
+| pH | 150 | 0.309 | -2.660 | -0.027 | -79.4% |
+| Water temperature | 150 | 1.695 | 0.704 | 0.844 | 50.4% |
+| Ammoniacal nitrogen as N | 146 | 0.143 | -2.815 | 0.268 | -222.4% |
+| Nitrate as N | 146 | 5.019 | -2.899 | 0.136 | 12.3% |
+| Reactive orthophosphate as P | 146 | 0.165 | -0.074 | 0.374 | 25.0% |
+
+Temperature is the only signal that transfers strongly across both external
+catchments. The Thames replication rejects a general numeric-prediction claim for
+pH and nutrients from the current remote-sensing and terrain features. Their
+Wyre associations are catchment-dependent and should be reframed as hypotheses
+for pressure screening, not concentration estimates. Thames is now also a
+consumed evaluation set; further model development requires another untouched
+geography.

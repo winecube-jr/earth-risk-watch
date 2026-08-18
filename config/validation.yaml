@@ -3,10 +3,13 @@ development_areas:
   - ribble-management
 external_validation_areas:
   - wyre-management
-untouched_external_validation_areas:
-  - thames-chilterns-south
+untouched_external_validation_areas: []
 external_evaluation_status:
   wyre-management:
+    status: evaluated
+    model: fixed-ridge-log1p-v1
+    evaluated_on: "2026-08-18"
+  thames-chilterns-south:
     status: evaluated
     model: fixed-ridge-log1p-v1
     evaluated_on: "2026-08-18"

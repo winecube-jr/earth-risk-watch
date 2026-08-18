@@ -97,7 +97,7 @@ def evaluate_fixed_baseline(table: pd.DataFrame) -> tuple[pd.DataFrame, dict[str
         }
     return pd.concat(predictions, ignore_index=True), {
         "model": "Ridge(alpha=1.0) on log1p target",
-        "selection": "Fixed before external evaluation; no Wyre tuning",
+        "selection": "Fixed before external evaluation; no external-catchment tuning",
         "readiness": readiness,
         "metrics_by_determinand": metrics,
     }
