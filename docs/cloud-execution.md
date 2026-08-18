@@ -17,7 +17,8 @@ downloads, and no secrets. It cannot run Earth Engine stages.
 The separate `study-area-inventory` workflow evaluates configured expansion
 areas without launching raster processing. It downloads the official geometry
 and classifications, creates the 2 km grid, queries sampling points, and reports
-area, cell count, and open-river monitoring coverage as a seven-day artifact.
+area, cell count, open-river monitoring coverage, 2024 observations, and observed
+spatial-cell count as a seven-day artifact.
 
 ## Google Colab: complete pilot
 

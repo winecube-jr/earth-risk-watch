@@ -38,6 +38,9 @@ jobs:
           earth-risk extract-water-sampling-points \
             --geometry "data/raw/study-areas/$AREA_ID.geojson" \
             --output "data/raw/study-areas/$AREA_ID-sampling-points.geojson"
+          earth-risk extract-water-observations \
+            --sampling-points "data/raw/study-areas/$AREA_ID-sampling-points.geojson" \
+            --output "data/features/study-areas/$AREA_ID-observations-2024.parquet"
       - name: Build inventory summary
         env:
           AREA_ID: ${{ inputs.area_id }}
@@ -48,10 +51,18 @@ jobs:
           from pathlib import Path
 
           import geopandas as gpd
+          import pandas as pd
 
           area_id = os.environ["AREA_ID"]
           grid = gpd.read_file(f"data/staged/study-areas/{area_id}-grid.geojson")
           points = gpd.read_file(f"data/raw/study-areas/{area_id}-sampling-points.geojson")
+          observations = pd.read_parquet(
+              f"data/features/study-areas/{area_id}-observations-2024.parquet"
+          )
+          active = points.loc[points["notation"].isin(observations["point_notation"].unique())]
+          active_cells = gpd.sjoin(
+              grid[["cell_id", "geometry"]], active[["geometry"]], predicate="intersects"
+          )["cell_id"].nunique()
           summary = {
               "area_id": area_id,
               "grid_cells": len(grid),
@@ -61,6 +72,13 @@ jobs:
                   ((points["status"] == "OPEN") &
                    (points["point_type"] == "FRESHWATER - RIVERS")).sum()
               ),
+              "observations_2024": len(observations),
+              "observed_river_sites": int(observations["point_notation"].nunique()),
+              "observed_grid_cells": int(active_cells),
+              "determinand_observations": {
+                  str(code): int(count)
+                  for code, count in observations["determinand_code"].value_counts().items()
+              },
           }
           Path("data/products/inventory").mkdir(parents=True, exist_ok=True)
           Path("data/products/inventory/summary.json").write_text(
@@ -74,6 +92,7 @@ jobs:
           path: |
             data/raw/study-areas/
             data/staged/study-areas/
+            data/features/study-areas/
             data/products/inventory/
           retention-days: 7
           if-no-files-found: error
