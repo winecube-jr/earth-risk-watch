@@ -17,6 +17,9 @@ def test_load_study_areas() -> None:
     development_area = registry.by_id("ribble-management")
     assert development_area.entity_id == "3070"
     assert development_area.role == "development-expansion"
+    untouched_area = registry.by_id("thames-chilterns-south")
+    assert untouched_area.entity_id == "3098"
+    assert untouched_area.role == "untouched-external-validation"
 
 
 def test_study_area_ids_must_be_unique(tmp_path: Path) -> None:

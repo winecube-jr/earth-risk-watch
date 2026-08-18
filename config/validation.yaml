@@ -3,6 +3,8 @@ development_areas:
   - ribble-management
 external_validation_areas:
   - wyre-management
+untouched_external_validation_areas:
+  - thames-chilterns-south
 external_evaluation_status:
   wyre-management:
     status: evaluated

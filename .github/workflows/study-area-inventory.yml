@@ -11,6 +11,7 @@ on:
         options:
           - lune-management
           - ribble-management
+          - thames-chilterns-south
           - wyre-management
           - lune-rawthey-greta
 

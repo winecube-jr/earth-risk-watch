@@ -7,6 +7,9 @@ catchment. Wyre is designated as an external-validation expansion: its data must
 remain a distinct geographic group when models or thresholds are assessed.
 Ribble is designated as a development expansion, adding upland, agricultural,
 urban and estuarine contexts while preserving Wyre as the untouched holdout.
+After the fixed v1 evaluation consumed Wyre, Thames and Chilterns South was
+reserved as the next untouched external area. It must remain excluded from all
+model changes until a new specification is frozen.
 
 `earth-risk extract-study-area AREA_ID` downloads the official boundary and
 classifications with checksums. Every downstream command already accepts custom

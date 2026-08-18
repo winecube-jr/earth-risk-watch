@@ -20,3 +20,8 @@ areas:
     entity_type: ManagementCatchment
     entity_id: "3070"
     role: development-expansion
+  - id: thames-chilterns-south
+    name: Thames and Chilterns South Management Catchment
+    entity_type: ManagementCatchment
+    entity_id: "3098"
+    role: untouched-external-validation
